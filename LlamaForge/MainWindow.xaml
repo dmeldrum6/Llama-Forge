@@ -1,0 +1,331 @@
+<Window x:Class="LlamaForge.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LlamaForge.ViewModels"
+        mc:Ignorable="d"
+        Title="Llama Forge - Local AI Server &amp; Chat" Height="800" Width="1200"
+        WindowStartupLocation="CenterScreen">
+    <Window.DataContext>
+        <local:MainViewModel/>
+    </Window.DataContext>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="0" Background="#2D2D30" Padding="10,5">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" Foreground="White" VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Ellipse Width="12" Height="12" Margin="0,0,5,0">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="Red"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsServerRunning}" Value="True">
+                                        <Setter Property="Fill" Value="LimeGreen"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Foreground="White" VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="Server Stopped"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsServerRunning}" Value="True">
+                                        <Setter Property="Text" Value="Server Running"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <TabControl Grid.Row="1" Margin="5">
+
+            <!-- Chat Tab -->
+            <TabItem Header="Chat">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Chat Messages -->
+                    <Border Grid.Row="0" BorderBrush="#CCCCCC" BorderThickness="1" Margin="5">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" x:Name="ChatScrollViewer">
+                            <ItemsControl ItemsSource="{Binding ChatMessages}" Padding="10">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,5" Padding="10" CornerRadius="5">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#E3F2FD"/>
+                                                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                                                    <Setter Property="MaxWidth" Value="600"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsUser}" Value="False">
+                                                            <Setter Property="Background" Value="#F5F5F5"/>
+                                                            <Setter Property="HorizontalAlignment" Value="Left"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <StackPanel>
+                                                <TextBlock FontWeight="Bold" FontSize="11" Foreground="#666666" Margin="0,0,0,5">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Text" Value="You"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsUser}" Value="False">
+                                                                    <Setter Property="Text" Value="Assistant"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                <TextBlock Text="{Binding Content}" TextWrapping="Wrap" FontSize="14"/>
+                                                <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}"
+                                                          FontSize="10" Foreground="#999999" Margin="0,5,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Input Area -->
+                    <Grid Grid.Row="1" Margin="5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Grid.Column="0" Text="{Binding UserInput, UpdateSourceTrigger=PropertyChanged}"
+                                 Height="60" TextWrapping="Wrap" AcceptsReturn="True"
+                                 VerticalScrollBarVisibility="Auto" Padding="5"
+                                 IsEnabled="{Binding IsServerRunning}">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Return" Modifiers="Control" Command="{Binding SendMessageCommand}"/>
+                            </TextBox.InputBindings>
+                        </TextBox>
+
+                        <Button Grid.Column="1" Content="Send" Width="80" Height="60" Margin="5,0"
+                                Command="{Binding SendMessageCommand}"
+                                Background="#4CAF50" Foreground="White" FontWeight="Bold" FontSize="14"/>
+
+                        <Button Grid.Column="2" Content="Clear" Width="80" Height="60"
+                                Command="{Binding ClearChatCommand}"
+                                Background="#757575" Foreground="White" FontWeight="Bold"/>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <!-- Server Control Tab -->
+            <TabItem Header="Server">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Server Configuration -->
+                    <GroupBox Grid.Row="0" Header="Server Configuration" Padding="10" Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="120"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Model File:" VerticalAlignment="Center" Margin="0,5"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding ModelPath}" Margin="5" IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+                            <Button Grid.Row="0" Grid.Column="2" Content="Browse..." Command="{Binding BrowseModelCommand}"
+                                    Margin="5" IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Host:" VerticalAlignment="Center" Margin="0,5"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Host}" Margin="5"
+                                     IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Port:" VerticalAlignment="Center" Margin="0,5"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Port}" Margin="5"
+                                     IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Context Size:" VerticalAlignment="Center" Margin="0,5"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding ContextSize}" Margin="5"
+                                     IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Threads:" VerticalAlignment="Center" Margin="0,5"/>
+                            <TextBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Threads}" Margin="5"
+                                     IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="GPU Layers:" VerticalAlignment="Center" Margin="0,5"/>
+                            <TextBox Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding GpuLayers}" Margin="5"
+                                     IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Additional Args:" VerticalAlignment="Center" Margin="0,5"/>
+                            <TextBox Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding AdditionalArgs}" Margin="5"
+                                     IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+                        </Grid>
+                    </GroupBox>
+
+                    <!-- Server Controls -->
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Content="Start Server" Width="120" Height="35" Margin="0,0,10,0"
+                                Command="{Binding StartServerCommand}"
+                                Background="#4CAF50" Foreground="White" FontWeight="Bold"/>
+                        <Button Content="Stop Server" Width="120" Height="35"
+                                Command="{Binding StopServerCommand}"
+                                Background="#F44336" Foreground="White" FontWeight="Bold"/>
+                    </StackPanel>
+
+                    <!-- Server Logs -->
+                    <GroupBox Grid.Row="2" Header="Server Logs" Padding="5">
+                        <Border BorderBrush="#CCCCCC" BorderThickness="1">
+                            <ListBox ItemsSource="{Binding ServerLogs}"
+                                     FontFamily="Consolas" FontSize="12"
+                                     Background="#1E1E1E" Foreground="#D4D4D4"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                        </Border>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+
+            <!-- Download Tab -->
+            <TabItem Header="Download / Update">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Variant Selection -->
+                    <GroupBox Grid.Row="0" Header="Select llama.cpp Variant" Padding="10" Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <ComboBox Grid.Row="0" ItemsSource="{Binding AvailableVariants}"
+                                      SelectedItem="{Binding SelectedVariant}"
+                                      DisplayMemberPath="DisplayName"
+                                      Height="30" Margin="0,0,0,10"/>
+
+                            <TextBlock Grid.Row="1" Text="{Binding SelectedVariant.Description}"
+                                       TextWrapping="Wrap" FontStyle="Italic" Foreground="#666666"/>
+                        </Grid>
+                    </GroupBox>
+
+                    <!-- Version Info -->
+                    <GroupBox Grid.Row="1" Header="Version Information" Padding="10" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock>
+                                <Run Text="Installed Version: " FontWeight="Bold"/>
+                                <Run Text="{Binding InstalledVersion, Mode=OneWay}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- Download Controls -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Content="Check for Updates" Width="150" Height="35" Margin="0,0,10,0"
+                                Command="{Binding CheckUpdatesCommand}"
+                                Background="#2196F3" Foreground="White" FontWeight="Bold"
+                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
+                        <Button Content="Download Selected" Width="150" Height="35"
+                                Command="{Binding DownloadVariantCommand}"
+                                Background="#FF9800" Foreground="White" FontWeight="Bold"
+                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
+                    </StackPanel>
+
+                    <!-- Download Progress -->
+                    <GroupBox Grid.Row="3" Header="Download Progress" Padding="10">
+                        <StackPanel>
+                            <ProgressBar Height="30" Value="{Binding DownloadProgress}" Maximum="100" Margin="0,0,0,10"/>
+                            <TextBlock Text="{Binding DownloadProgress, StringFormat='{}Progress: {0}%'}"
+                                       HorizontalAlignment="Center" FontWeight="Bold"/>
+                        </StackPanel>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+
+            <!-- About Tab -->
+            <TabItem Header="About">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="20">
+                        <TextBlock Text="Llama Forge" FontSize="24" FontWeight="Bold" Margin="0,0,0,10"/>
+                        <TextBlock Text="A WPF wrapper for llama.cpp" FontSize="14" Foreground="#666666" Margin="0,0,0,20"/>
+
+                        <TextBlock Text="Features:" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                        <TextBlock TextWrapping="Wrap" Margin="0,0,0,10">
+                            • Download and manage multiple llama.cpp variants (CPU, CUDA, ROCm, Vulkan, etc.)<LineBreak/>
+                            • Start and stop local llama.cpp server<LineBreak/>
+                            • Chat interface for interacting with models<LineBreak/>
+                            • Automatic update detection from GitHub<LineBreak/>
+                            • Server configuration and monitoring<LineBreak/>
+                        </TextBlock>
+
+                        <TextBlock Text="Quick Start:" FontSize="16" FontWeight="Bold" Margin="0,10,0,10"/>
+                        <TextBlock TextWrapping="Wrap" Margin="0,0,0,10">
+                            1. Go to the "Download / Update" tab<LineBreak/>
+                            2. Select a variant (e.g., CUDA for NVIDIA GPUs, CPU for CPU-only)<LineBreak/>
+                            3. Click "Download Selected" to download llama.cpp<LineBreak/>
+                            4. Go to the "Server" tab<LineBreak/>
+                            5. Browse and select a GGUF model file<LineBreak/>
+                            6. Configure server settings (GPU layers, context size, etc.)<LineBreak/>
+                            7. Click "Start Server"<LineBreak/>
+                            8. Go to the "Chat" tab and start chatting!<LineBreak/>
+                        </TextBlock>
+
+                        <TextBlock Text="Tips:" FontSize="16" FontWeight="Bold" Margin="0,10,0,10"/>
+                        <TextBlock TextWrapping="Wrap" Margin="0,0,0,10">
+                            • Use Ctrl+Enter to send messages in the chat<LineBreak/>
+                            • GPU Layers: Set to 0 for CPU-only, or higher values to offload layers to GPU<LineBreak/>
+                            • Context Size: Larger values use more memory but allow longer conversations<LineBreak/>
+                            • Check the Server Logs for detailed information about server status<LineBreak/>
+                        </TextBlock>
+
+                        <TextBlock Text="Links:" FontSize="16" FontWeight="Bold" Margin="0,10,0,10"/>
+                        <TextBlock TextWrapping="Wrap">
+                            llama.cpp: https://github.com/ggerganov/llama.cpp<LineBreak/>
+                            Models: https://huggingface.co/models?search=gguf<LineBreak/>
+                        </TextBlock>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

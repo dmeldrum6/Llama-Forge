@@ -122,6 +122,13 @@ namespace LlamaForge.ViewModels
             set { _additionalArgs = value; OnPropertyChanged(); Config.AdditionalArgs = value; }
         }
 
+        private bool _isDarkTheme = true;
+        public bool IsDarkTheme
+        {
+            get => _isDarkTheme;
+            set { _isDarkTheme = value; OnPropertyChanged(); }
+        }
+
         public ServerConfig Config { get; } = new();
 
         public string InstalledVersion => SelectedVariant != null ? _githubService.GetInstalledVersion(SelectedVariant) ?? "Not installed" : "Select a variant";
@@ -138,6 +145,7 @@ namespace LlamaForge.ViewModels
         public ICommand CheckUpdatesCommand { get; }
         public ICommand DownloadVariantCommand { get; }
         public ICommand ClearChatCommand { get; }
+        public ICommand ToggleThemeCommand { get; }
 
         public MainViewModel()
         {
@@ -165,6 +173,7 @@ namespace LlamaForge.ViewModels
             CheckUpdatesCommand = new RelayCommand(async _ => await CheckForUpdatesAsync());
             DownloadVariantCommand = new RelayCommand(async _ => await DownloadSelectedVariantAsync());
             ClearChatCommand = new RelayCommand(_ => ChatMessages.Clear());
+            ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
 
             // Load settings
             LoadSettings();
@@ -390,6 +399,60 @@ namespace LlamaForge.ViewModels
         {
             // TODO: Load settings from file
             // For now, use defaults
+        }
+
+        private void ToggleTheme()
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                IsDarkTheme = !IsDarkTheme;
+
+                var resources = Application.Current.Resources;
+
+                if (IsDarkTheme)
+                {
+                    // Dark Theme Colors
+                    UpdateResourceColor(resources, "BackgroundPrimary", "#0A0E1A");
+                    UpdateResourceColor(resources, "BackgroundSecondary", "#12182B");
+                    UpdateResourceColor(resources, "BackgroundTertiary", "#1A2236");
+                    UpdateResourceColor(resources, "BackgroundCard", "#1E2840");
+                    UpdateResourceColor(resources, "BackgroundCardHover", "#252F4A");
+
+                    UpdateResourceColor(resources, "TextPrimary", "#E8EAED");
+                    UpdateResourceColor(resources, "TextSecondary", "#9AA0B4");
+                    UpdateResourceColor(resources, "TextTertiary", "#6B7280");
+
+                    UpdateResourceColor(resources, "BorderPrimary", "#2D3748");
+
+                    StatusMessage = "Switched to Dark Theme";
+                }
+                else
+                {
+                    // Light Theme Colors
+                    UpdateResourceColor(resources, "BackgroundPrimary", "#F8FAFC");
+                    UpdateResourceColor(resources, "BackgroundSecondary", "#FFFFFF");
+                    UpdateResourceColor(resources, "BackgroundTertiary", "#F1F5F9");
+                    UpdateResourceColor(resources, "BackgroundCard", "#FFFFFF");
+                    UpdateResourceColor(resources, "BackgroundCardHover", "#F1F5F9");
+
+                    UpdateResourceColor(resources, "TextPrimary", "#1E293B");
+                    UpdateResourceColor(resources, "TextSecondary", "#475569");
+                    UpdateResourceColor(resources, "TextTertiary", "#94A3B8");
+
+                    UpdateResourceColor(resources, "BorderPrimary", "#E2E8F0");
+
+                    StatusMessage = "Switched to Light Theme";
+                }
+            });
+        }
+
+        private void UpdateResourceColor(ResourceDictionary resources, string key, string colorHex)
+        {
+            if (resources.Contains(key) && resources[key] is System.Windows.Media.SolidColorBrush)
+            {
+                var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(colorHex);
+                resources[key] = new System.Windows.Media.SolidColorBrush(color);
+            }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

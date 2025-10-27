@@ -6,40 +6,318 @@
     <Application.Resources>
         <helpers:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
 
-        <!-- Button Style -->
+        <!-- THEME COLORS - Dark Theme (Default) -->
+        <SolidColorBrush x:Key="BackgroundPrimary" Color="#0A0E1A"/>
+        <SolidColorBrush x:Key="BackgroundSecondary" Color="#12182B"/>
+        <SolidColorBrush x:Key="BackgroundTertiary" Color="#1A2236"/>
+        <SolidColorBrush x:Key="BackgroundCard" Color="#1E2840"/>
+        <SolidColorBrush x:Key="BackgroundCardHover" Color="#252F4A"/>
+
+        <SolidColorBrush x:Key="TextPrimary" Color="#E8EAED"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#9AA0B4"/>
+        <SolidColorBrush x:Key="TextTertiary" Color="#6B7280"/>
+
+        <SolidColorBrush x:Key="AccentPrimary" Color="#0EA5E9"/>
+        <SolidColorBrush x:Key="AccentSecondary" Color="#3B82F6"/>
+        <SolidColorBrush x:Key="AccentCyan" Color="#06B6D4"/>
+        <SolidColorBrush x:Key="AccentPurple" Color="#8B5CF6"/>
+
+        <SolidColorBrush x:Key="SuccessColor" Color="#10B981"/>
+        <SolidColorBrush x:Key="ErrorColor" Color="#EF4444"/>
+        <SolidColorBrush x:Key="WarningColor" Color="#F59E0B"/>
+
+        <SolidColorBrush x:Key="BorderPrimary" Color="#2D3748"/>
+        <SolidColorBrush x:Key="BorderAccent" Color="#0EA5E9"/>
+
+        <!-- Gradients -->
+        <LinearGradientBrush x:Key="AccentGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#0EA5E9" Offset="0"/>
+            <GradientStop Color="#8B5CF6" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="AccentGradientReverse" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#8B5CF6" Offset="0"/>
+            <GradientStop Color="#06B6D4" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="CardGlowGradient" StartPoint="0,0" EndPoint="1,1" Opacity="0.1">
+            <GradientStop Color="#0EA5E9" Offset="0"/>
+            <GradientStop Color="Transparent" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!-- Animation Durations -->
+        <Duration x:Key="FastAnimation">0:0:0.15</Duration>
+        <Duration x:Key="MediumAnimation">0:0:0.3</Duration>
+
+        <!-- Modern Button Style -->
         <Style TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource BackgroundCard}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderPrimary}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="10,5"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Opacity" Value="0.8"/>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Opacity" Value="0.5"/>
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="shadow" ShadowDepth="0" BlurRadius="0" Color="#0EA5E9" Opacity="0"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="border"
+                                                          Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                          To="#252F4A" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="shadow"
+                                                           Storyboard.TargetProperty="BlurRadius"
+                                                           To="15" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="shadow"
+                                                           Storyboard.TargetProperty="Opacity"
+                                                           To="0.6" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="border"
+                                                          Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                          Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="shadow"
+                                                           Storyboard.TargetProperty="BlurRadius"
+                                                           To="0" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="shadow"
+                                                           Storyboard.TargetProperty="Opacity"
+                                                           To="0" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <!-- TextBox Style -->
+        <!-- Accent Button Style -->
+        <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="{StaticResource AccentGradient}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentPrimary}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- Success Button Style -->
+        <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="{StaticResource SuccessColor}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SuccessColor}"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Error Button Style -->
+        <Style x:Key="ErrorButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="{StaticResource ErrorColor}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ErrorColor}"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Warning Button Style -->
+        <Style x:Key="WarningButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="{StaticResource WarningColor}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource WarningColor}"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Modern TextBox Style -->
         <Style TargetType="TextBox">
-            <Setter Property="Padding" Value="5"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+            <Setter Property="Background" Value="{StaticResource BackgroundSecondary}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderPrimary}"/>
             <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="CaretBrush" Value="{StaticResource AccentPrimary}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentPrimary}"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect ShadowDepth="0" BlurRadius="8" Color="#0EA5E9" Opacity="0.4"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <!-- ComboBox Style -->
+        <!-- Modern ComboBox Style -->
         <Style TargetType="ComboBox">
-            <Setter Property="Padding" Value="5"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="{StaticResource BackgroundSecondary}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderPrimary}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="14"/>
         </Style>
 
-        <!-- GroupBox Style -->
+        <!-- Modern TabControl Style -->
+        <Style TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style TargetType="TabItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="Border"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="20,12"
+                                Margin="0,0,4,0">
+                            <ContentPresenter x:Name="ContentSite"
+                                            ContentSource="Header"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource BackgroundCard}"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource AccentPrimary}"/>
+                                <Setter TargetName="Border" Property="BorderThickness" Value="0,0,0,2"/>
+                                <Setter Property="Foreground" Value="{StaticResource AccentPrimary}"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="False">
+                                <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource BackgroundTertiary}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern GroupBox Style -->
         <Style TargetType="GroupBox">
-            <Setter Property="BorderBrush" Value="#CCCCCC"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Background" Value="{StaticResource BackgroundCard}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderPrimary}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GroupBox">
+                        <Grid>
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8"
+                                    Padding="{TemplateBinding Padding}">
+                                <Border.Effect>
+                                    <DropShadowEffect ShadowDepth="0" BlurRadius="20" Color="#000000" Opacity="0.3"/>
+                                </Border.Effect>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <ContentPresenter Grid.Row="0" ContentSource="Header"
+                                                    Margin="0,0,0,12"
+                                                    TextElement.FontSize="16"
+                                                    TextElement.FontWeight="SemiBold"
+                                                    TextElement.Foreground="{StaticResource TextPrimary}"/>
+                                    <ContentPresenter Grid.Row="1"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Progress Bar Style -->
+        <Style TargetType="ProgressBar">
+            <Setter Property="Background" Value="{StaticResource BackgroundSecondary}"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentGradient}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderPrimary}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <Grid>
+                                <Border x:Name="PART_Track"/>
+                                <Border x:Name="PART_Indicator"
+                                        Background="{TemplateBinding Foreground}"
+                                        HorizontalAlignment="Left"
+                                        CornerRadius="4">
+                                    <Border.Effect>
+                                        <DropShadowEffect ShadowDepth="0" BlurRadius="8" Color="#0EA5E9" Opacity="0.8"/>
+                                    </Border.Effect>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ScrollViewer Style -->
+        <Style TargetType="ScrollViewer">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+
+        <!-- ListBox Style -->
+        <Style TargetType="ListBox">
+            <Setter Property="Background" Value="{StaticResource BackgroundSecondary}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderPrimary}"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
     </Application.Resources>
 </Application>

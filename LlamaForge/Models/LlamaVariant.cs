@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace LlamaForge.Models
 {
     public enum LlamaVariantType

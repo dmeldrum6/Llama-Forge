@@ -350,13 +350,22 @@
                                 <TextBlock Text="Server Logs" FontSize="16" FontWeight="SemiBold"/>
                             </StackPanel>
                         </GroupBox.Header>
-                        <ListBox ItemsSource="{Binding ServerLogs}"
-                                 FontFamily="Consolas" FontSize="12"
-                                 Background="{StaticResource BackgroundSecondary}"
-                                 Foreground="{StaticResource TextPrimary}"
-                                 BorderBrush="{StaticResource BorderPrimary}"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                 ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                     HorizontalScrollBarVisibility="Auto"
+                                     MinHeight="200">
+                            <ItemsControl ItemsSource="{Binding ServerLogs}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}"
+                                                  FontFamily="Consolas"
+                                                  FontSize="12"
+                                                  Foreground="{StaticResource TextPrimary}"
+                                                  TextWrapping="NoWrap"
+                                                  Margin="0,2"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </GroupBox>
                 </Grid>
             </TabItem>

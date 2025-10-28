@@ -9,7 +9,7 @@
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource BackgroundPrimary}">
     <Window.DataContext>
-        <local:MainViewModel/>
+        <local:MainViewModel/> 
     </Window.DataContext>
 
     <Grid>
@@ -37,7 +37,7 @@
                                Foreground="{StaticResource AccentGradient}" VerticalAlignment="Center" Margin="0,0,12,0"/>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="LLAMA FORGE" FontSize="18" FontWeight="Bold"
-                                   Foreground="{StaticResource TextPrimary}" LetterSpacing="2"/>
+                                   Foreground="{StaticResource TextPrimary}" /> <!-- LetterSpacing="2"/> -->
                         <TextBlock Text="Local AI Server &amp; Chat" FontSize="10"
                                    Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0"/>
                     </StackPanel>
@@ -483,7 +483,7 @@
                                           Foreground="{StaticResource AccentGradient}"
                                           HorizontalAlignment="Center" Margin="0,0,0,16"/>
                                 <TextBlock Text="LLAMA FORGE" FontSize="32" FontWeight="Bold"
-                                          Foreground="{StaticResource TextPrimary}" LetterSpacing="4"
+                                          Foreground="{StaticResource TextPrimary}" 
                                           HorizontalAlignment="Center"/>
                                 <TextBlock Text="A Modern WPF Wrapper for llama.cpp" FontSize="16"
                                           Foreground="{StaticResource TextSecondary}" Margin="0,8,0,0"

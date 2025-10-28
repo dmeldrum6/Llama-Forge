@@ -5,10 +5,14 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
-    <ApplicationIcon>llama.ico</ApplicationIcon>
+    <ApplicationIcon>anvil.ico</ApplicationIcon>
     <AssemblyName>LlamaForge</AssemblyName>
     <RootNamespace>LlamaForge</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="anvil.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

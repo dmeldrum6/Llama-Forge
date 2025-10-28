@@ -274,9 +274,47 @@ namespace LlamaForge.ViewModels
 
             UserInput = string.Empty;
 
+            // Get only messages with content for the API call
             var messages = ChatMessages.Where(m => !string.IsNullOrEmpty(m.Content)).ToList();
 
-            await _chatClient.SendChatMessageAsync(messages, stream: true);
+            try
+            {
+                var response = await _chatClient.SendChatMessageAsync(messages, stream: true);
+
+                // If streaming didn't populate the message (no chunks received), check if we got a response
+                var lastMessage = ChatMessages.LastOrDefault(m => m.Role == "assistant");
+                if (lastMessage != null && string.IsNullOrEmpty(lastMessage.Content) && !string.IsNullOrEmpty(response))
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        lastMessage.Content = response;
+                        var index = ChatMessages.IndexOf(lastMessage);
+                        ChatMessages[index] = lastMessage;
+                    });
+                }
+                else if (lastMessage != null && string.IsNullOrEmpty(lastMessage.Content))
+                {
+                    // No response received, remove the empty assistant message
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        ChatMessages.Remove(lastMessage);
+                    });
+                    AddServerLog("Warning: No response received from server. Check server logs for errors.");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Remove the empty assistant message on error
+                var lastMessage = ChatMessages.LastOrDefault(m => m.Role == "assistant");
+                if (lastMessage != null && string.IsNullOrEmpty(lastMessage.Content))
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        ChatMessages.Remove(lastMessage);
+                    });
+                }
+                AddServerLog($"Error sending message: {ex.Message}");
+            }
 
             IsBusy = false;
         }

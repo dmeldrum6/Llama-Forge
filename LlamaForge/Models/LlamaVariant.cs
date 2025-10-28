@@ -26,15 +26,15 @@ namespace LlamaForge.Models
                 new LlamaVariant
                 {
                     Type = LlamaVariantType.CPU,
-                    DisplayName = "CPU (AVX2)",
-                    AssetNamePattern = "llama-*-bin-win-avx2-x64.zip",
-                    Description = "CPU-only version with AVX2 support"
+                    DisplayName = "CPU",
+                    AssetNamePattern = "llama-*-bin-win-cpu-x64.zip",
+                    Description = "CPU-only version (AVX/AVX2/AVX-512 support)"
                 },
                 new LlamaVariant
                 {
                     Type = LlamaVariantType.CUDA,
                     DisplayName = "CUDA (NVIDIA GPU)",
-                    AssetNamePattern = "llama-*-bin-win-cuda-cu*-x64.zip",
+                    AssetNamePattern = "llama-*-bin-win-cuda-*-x64.zip",
                     Description = "NVIDIA GPU acceleration with CUDA"
                 },
                 new LlamaVariant
@@ -42,14 +42,14 @@ namespace LlamaForge.Models
                     Type = LlamaVariantType.Vulkan,
                     DisplayName = "Vulkan",
                     AssetNamePattern = "llama-*-bin-win-vulkan-x64.zip",
-                    Description = "Vulkan GPU acceleration"
+                    Description = "Vulkan GPU acceleration (cross-platform)"
                 },
                 new LlamaVariant
                 {
                     Type = LlamaVariantType.ROCm,
-                    DisplayName = "ROCm (AMD GPU)",
-                    AssetNamePattern = "llama-*-bin-win-rocm-x64.zip",
-                    Description = "AMD GPU acceleration with ROCm"
+                    DisplayName = "HIP/ROCm (AMD GPU)",
+                    AssetNamePattern = "llama-*-bin-win-hip-*-x64.zip",
+                    Description = "AMD GPU acceleration with HIP/ROCm"
                 },
                 new LlamaVariant
                 {

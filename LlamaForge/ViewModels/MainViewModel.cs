@@ -448,10 +448,12 @@ namespace LlamaForge.ViewModels
 
         private void UpdateResourceColor(ResourceDictionary resources, string key, string colorHex)
         {
-            if (resources.Contains(key) && resources[key] is System.Windows.Media.SolidColorBrush)
+            if (resources.Contains(key))
             {
                 var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(colorHex);
-                resources[key] = new System.Windows.Media.SolidColorBrush(color);
+                var brush = new System.Windows.Media.SolidColorBrush(color);
+                brush.Freeze(); // Freeze for better performance
+                resources[key] = brush;
             }
         }
 

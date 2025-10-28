@@ -407,43 +407,71 @@ namespace LlamaForge.ViewModels
             {
                 IsDarkTheme = !IsDarkTheme;
 
-                var resources = Application.Current.Resources;
+                // Get the main window to force a visual update
+                var mainWindow = Application.Current.MainWindow;
 
                 if (IsDarkTheme)
                 {
                     // Dark Theme Colors
-                    UpdateResourceColor(resources, "BackgroundPrimary", "#0A0E1A");
-                    UpdateResourceColor(resources, "BackgroundSecondary", "#12182B");
-                    UpdateResourceColor(resources, "BackgroundTertiary", "#1A2236");
-                    UpdateResourceColor(resources, "BackgroundCard", "#1E2840");
-                    UpdateResourceColor(resources, "BackgroundCardHover", "#252F4A");
-
-                    UpdateResourceColor(resources, "TextPrimary", "#E8EAED");
-                    UpdateResourceColor(resources, "TextSecondary", "#9AA0B4");
-                    UpdateResourceColor(resources, "TextTertiary", "#6B7280");
-
-                    UpdateResourceColor(resources, "BorderPrimary", "#2D3748");
+                    ApplyTheme(
+                        backgroundPrimary: "#0A0E1A",
+                        backgroundSecondary: "#12182B",
+                        backgroundTertiary: "#1A2236",
+                        backgroundCard: "#1E2840",
+                        backgroundCardHover: "#252F4A",
+                        textPrimary: "#E8EAED",
+                        textSecondary: "#9AA0B4",
+                        textTertiary: "#6B7280",
+                        borderPrimary: "#2D3748"
+                    );
 
                     StatusMessage = "Switched to Dark Theme";
                 }
                 else
                 {
                     // Light Theme Colors
-                    UpdateResourceColor(resources, "BackgroundPrimary", "#F8FAFC");
-                    UpdateResourceColor(resources, "BackgroundSecondary", "#FFFFFF");
-                    UpdateResourceColor(resources, "BackgroundTertiary", "#F1F5F9");
-                    UpdateResourceColor(resources, "BackgroundCard", "#FFFFFF");
-                    UpdateResourceColor(resources, "BackgroundCardHover", "#F1F5F9");
-
-                    UpdateResourceColor(resources, "TextPrimary", "#1E293B");
-                    UpdateResourceColor(resources, "TextSecondary", "#475569");
-                    UpdateResourceColor(resources, "TextTertiary", "#94A3B8");
-
-                    UpdateResourceColor(resources, "BorderPrimary", "#E2E8F0");
+                    ApplyTheme(
+                        backgroundPrimary: "#F8FAFC",
+                        backgroundSecondary: "#FFFFFF",
+                        backgroundTertiary: "#F1F5F9",
+                        backgroundCard: "#FFFFFF",
+                        backgroundCardHover: "#F1F5F9",
+                        textPrimary: "#1E293B",
+                        textSecondary: "#475569",
+                        textTertiary: "#94A3B8",
+                        borderPrimary: "#E2E8F0"
+                    );
 
                     StatusMessage = "Switched to Light Theme";
                 }
+
+                // Force the window to update its visual tree
+                if (mainWindow != null)
+                {
+                    mainWindow.Background = (System.Windows.Media.Brush)Application.Current.Resources["BackgroundPrimary"];
+                    mainWindow.InvalidateVisual();
+                    mainWindow.UpdateLayout();
+                }
             });
+        }
+
+        private void ApplyTheme(string backgroundPrimary, string backgroundSecondary, string backgroundTertiary,
+            string backgroundCard, string backgroundCardHover, string textPrimary, string textSecondary,
+            string textTertiary, string borderPrimary)
+        {
+            var resources = Application.Current.Resources;
+
+            UpdateResourceColor(resources, "BackgroundPrimary", backgroundPrimary);
+            UpdateResourceColor(resources, "BackgroundSecondary", backgroundSecondary);
+            UpdateResourceColor(resources, "BackgroundTertiary", backgroundTertiary);
+            UpdateResourceColor(resources, "BackgroundCard", backgroundCard);
+            UpdateResourceColor(resources, "BackgroundCardHover", backgroundCardHover);
+
+            UpdateResourceColor(resources, "TextPrimary", textPrimary);
+            UpdateResourceColor(resources, "TextSecondary", textSecondary);
+            UpdateResourceColor(resources, "TextTertiary", textTertiary);
+
+            UpdateResourceColor(resources, "BorderPrimary", borderPrimary);
         }
 
         private void UpdateResourceColor(ResourceDictionary resources, string key, string colorHex)

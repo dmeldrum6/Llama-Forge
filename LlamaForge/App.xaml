@@ -51,9 +51,9 @@
 
         <!-- Modern Button Style -->
         <Style TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource BackgroundCard}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderPrimary}"/>
+            <Setter Property="Background" Value="{DynamicResource BackgroundCard}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderPrimary}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="16,8"/>
             <Setter Property="FontSize" Value="14"/>
@@ -125,7 +125,7 @@
         <!-- Accent Button Style -->
         <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Background" Value="{StaticResource AccentGradient}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource AccentPrimary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimary}"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
@@ -153,13 +153,13 @@
 
         <!-- Modern TextBox Style -->
         <Style TargetType="TextBox">
-            <Setter Property="Background" Value="{StaticResource BackgroundSecondary}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderPrimary}"/>
+            <Setter Property="Background" Value="{DynamicResource BackgroundSecondary}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderPrimary}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="CaretBrush" Value="{StaticResource AccentPrimary}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource AccentPrimary}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
@@ -172,7 +172,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsFocused" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentPrimary}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentPrimary}"/>
                                 <Setter TargetName="border" Property="Effect">
                                     <Setter.Value>
                                         <DropShadowEffect ShadowDepth="0" BlurRadius="8" Color="#0EA5E9" Opacity="0.4"/>
@@ -190,9 +190,9 @@
 
         <!-- Modern ComboBox Style -->
         <Style TargetType="ComboBox">
-            <Setter Property="Background" Value="{StaticResource BackgroundSecondary}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderPrimary}"/>
+            <Setter Property="Background" Value="{DynamicResource BackgroundSecondary}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderPrimary}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="FontSize" Value="14"/>
@@ -220,17 +220,17 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="{StaticResource BackgroundCard}"/>
-                                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource AccentPrimary}"/>
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource BackgroundCard}"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentPrimary}"/>
                                 <Setter TargetName="Border" Property="BorderThickness" Value="0,0,0,2"/>
-                                <Setter Property="Foreground" Value="{StaticResource AccentPrimary}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource AccentPrimary}"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="False">
-                                <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="{StaticResource BackgroundTertiary}"/>
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource BackgroundTertiary}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -240,9 +240,9 @@
 
         <!-- Modern GroupBox Style -->
         <Style TargetType="GroupBox">
-            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-            <Setter Property="Background" Value="{StaticResource BackgroundCard}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderPrimary}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="Background" Value="{DynamicResource BackgroundCard}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderPrimary}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="16"/>
             <Setter Property="Template">
@@ -278,9 +278,9 @@
 
         <!-- Progress Bar Style -->
         <Style TargetType="ProgressBar">
-            <Setter Property="Background" Value="{StaticResource BackgroundSecondary}"/>
+            <Setter Property="Background" Value="{DynamicResource BackgroundSecondary}"/>
             <Setter Property="Foreground" Value="{StaticResource AccentGradient}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderPrimary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderPrimary}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Height" Value="8"/>
             <Setter Property="Template">
@@ -314,9 +314,9 @@
 
         <!-- ListBox Style -->
         <Style TargetType="ListBox">
-            <Setter Property="Background" Value="{StaticResource BackgroundSecondary}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderPrimary}"/>
+            <Setter Property="Background" Value="{DynamicResource BackgroundSecondary}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderPrimary}"/>
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
     </Application.Resources>

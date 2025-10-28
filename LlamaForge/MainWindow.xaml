@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Llama Forge - Local AI Server &amp; Chat" Height="800" Width="1200"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource BackgroundPrimary}">
+        Background="{DynamicResource BackgroundPrimary}">
     <Window.DataContext>
         <local:MainViewModel/> 
     </Window.DataContext>
@@ -19,7 +19,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header Bar -->
-        <Border Grid.Row="0" Background="{StaticResource BackgroundSecondary}" Padding="20,12">
+        <Border Grid.Row="0" Background="{DynamicResource BackgroundSecondary}" Padding="20,12">
             <Border.Effect>
                 <DropShadowEffect ShadowDepth="0" BlurRadius="20" Color="#000000" Opacity="0.5"/>
             </Border.Effect>
@@ -34,18 +34,18 @@
                 <!-- App Title with Icon -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="&#xE753;" FontFamily="Segoe MDL2 Assets" FontSize="24"
-                               Foreground="{StaticResource AccentGradient}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                               Foreground="{DynamicResource AccentGradient}" VerticalAlignment="Center" Margin="0,0,12,0"/>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="LLAMA FORGE" FontSize="18" FontWeight="Bold"
-                                   Foreground="{StaticResource TextPrimary}" /> <!-- LetterSpacing="2"/> -->
+                                   Foreground="{DynamicResource TextPrimary}" /> <!-- LetterSpacing="2"/> -->
                         <TextBlock Text="Local AI Server &amp; Chat" FontSize="10"
-                                   Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0"/>
+                                   Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>
 
                 <!-- Status Message -->
                 <TextBlock Grid.Column="1" Text="{Binding StatusMessage}"
-                          Foreground="{StaticResource TextSecondary}"
+                          Foreground="{DynamicResource TextSecondary}"
                           VerticalAlignment="Center"
                           Margin="40,0,0,0"
                           FontSize="13"/>
@@ -54,15 +54,15 @@
                 <Button Grid.Column="2" Width="40" Height="40" Margin="0,0,12,0"
                         Command="{Binding ToggleThemeCommand}"
                         ToolTip="Toggle Dark/Light Theme"
-                        Background="{StaticResource BackgroundCard}"
-                        BorderBrush="{StaticResource BorderPrimary}">
+                        Background="{DynamicResource BackgroundCard}"
+                        BorderBrush="{DynamicResource BorderPrimary}">
                     <TextBlock Text="&#xE771;" FontFamily="Segoe MDL2 Assets" FontSize="16"
-                               Foreground="{StaticResource TextPrimary}"/>
+                               Foreground="{DynamicResource TextPrimary}"/>
                 </Button>
 
                 <!-- Server Status -->
-                <Border Grid.Column="3" Background="{StaticResource BackgroundCard}"
-                        BorderBrush="{StaticResource BorderPrimary}" BorderThickness="1"
+                <Border Grid.Column="3" Background="{DynamicResource BackgroundCard}"
+                        BorderBrush="{DynamicResource BorderPrimary}" BorderThickness="1"
                         CornerRadius="20" Padding="16,8">
                     <StackPanel Orientation="Horizontal">
                         <Ellipse Width="10" Height="10" Margin="0,0,8,0">
@@ -81,7 +81,7 @@
                             </Ellipse.Effect>
                         </Ellipse>
                         <TextBlock VerticalAlignment="Center" FontWeight="Medium" FontSize="13"
-                                   Foreground="{StaticResource TextPrimary}">
+                                   Foreground="{DynamicResource TextPrimary}">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Text" Value="Server Offline"/>
@@ -116,8 +116,8 @@
                     </Grid.RowDefinitions>
 
                     <!-- Chat Messages -->
-                    <Border Grid.Row="0" Background="{StaticResource BackgroundCard}"
-                            BorderBrush="{StaticResource BorderPrimary}" BorderThickness="1"
+                    <Border Grid.Row="0" Background="{DynamicResource BackgroundCard}"
+                            BorderBrush="{DynamicResource BorderPrimary}" BorderThickness="1"
                             CornerRadius="8" Margin="0,0,0,16">
                         <Border.Effect>
                             <DropShadowEffect ShadowDepth="0" BlurRadius="20" Color="#000000" Opacity="0.3"/>
@@ -141,9 +141,9 @@
                                                     <Setter Property="MaxWidth" Value="700"/>
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding IsUser}" Value="False">
-                                                            <Setter Property="Background" Value="{StaticResource BackgroundSecondary}"/>
+                                                            <Setter Property="Background" Value="{DynamicResource BackgroundSecondary}"/>
                                                             <Setter Property="HorizontalAlignment" Value="Left"/>
-                                                            <Setter Property="BorderBrush" Value="{StaticResource BorderPrimary}"/>
+                                                            <Setter Property="BorderBrush" Value="{DynamicResource BorderPrimary}"/>
                                                             <Setter Property="BorderThickness" Value="1"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
@@ -155,7 +155,7 @@
                                             <StackPanel>
                                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                                     <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="14" Margin="0,0,8,0"
-                                                               Foreground="{StaticResource AccentPrimary}">
+                                                               Foreground="{DynamicResource AccentPrimary}">
                                                         <TextBlock.Style>
                                                             <Style TargetType="TextBlock">
                                                                 <Setter Property="Text" Value="&#xE77B;"/>
@@ -167,7 +167,7 @@
                                                             </Style>
                                                         </TextBlock.Style>
                                                     </TextBlock>
-                                                    <TextBlock FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimary}">
+                                                    <TextBlock FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextPrimary}">
                                                         <TextBlock.Style>
                                                             <Style TargetType="TextBlock">
                                                                 <Setter Property="Text" Value="YOU"/>
@@ -181,9 +181,9 @@
                                                     </TextBlock>
                                                 </StackPanel>
                                                 <TextBlock Text="{Binding Content}" TextWrapping="Wrap" FontSize="14"
-                                                          Foreground="{StaticResource TextPrimary}" LineHeight="22"/>
+                                                          Foreground="{DynamicResource TextPrimary}" LineHeight="22"/>
                                                 <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}"
-                                                          FontSize="11" Foreground="{StaticResource TextTertiary}"
+                                                          FontSize="11" Foreground="{DynamicResource TextTertiary}"
                                                           Margin="0,8,0,0" FontStyle="Italic"/>
                                             </StackPanel>
                                         </Border>
@@ -194,8 +194,8 @@
                     </Border>
 
                     <!-- Input Area -->
-                    <Border Grid.Row="1" Background="{StaticResource BackgroundCard}"
-                            BorderBrush="{StaticResource BorderPrimary}" BorderThickness="1"
+                    <Border Grid.Row="1" Background="{DynamicResource BackgroundCard}"
+                            BorderBrush="{DynamicResource BorderPrimary}" BorderThickness="1"
                             CornerRadius="8" Padding="16">
                         <Border.Effect>
                             <DropShadowEffect ShadowDepth="0" BlurRadius="20" Color="#000000" Opacity="0.3"/>
@@ -257,7 +257,7 @@
                         <GroupBox.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE115;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
-                                          Foreground="{StaticResource AccentPrimary}"/>
+                                          Foreground="{DynamicResource AccentPrimary}"/>
                                 <TextBlock Text="Server Configuration" FontSize="16" FontWeight="SemiBold"/>
                             </StackPanel>
                         </GroupBox.Header>
@@ -278,7 +278,7 @@
                             </Grid.RowDefinitions>
 
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Model File:" VerticalAlignment="Center"
-                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{StaticResource TextSecondary}"/>
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
                             <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding ModelPath}" Margin="0,0,12,12"
                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
                             <Button Grid.Row="0" Grid.Column="2" Command="{Binding BrowseModelCommand}" Margin="0,0,0,12"
@@ -290,32 +290,32 @@
                             </Button>
 
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Host:" VerticalAlignment="Center"
-                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{StaticResource TextSecondary}"/>
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
                             <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Host}" Margin="0,0,0,12"
                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
 
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Port:" VerticalAlignment="Center"
-                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{StaticResource TextSecondary}"/>
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
                             <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Port}" Margin="0,0,0,12"
                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
 
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Context Size:" VerticalAlignment="Center"
-                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{StaticResource TextSecondary}"/>
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
                             <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding ContextSize}" Margin="0,0,0,12"
                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
 
                             <TextBlock Grid.Row="4" Grid.Column="0" Text="Threads:" VerticalAlignment="Center"
-                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{StaticResource TextSecondary}"/>
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
                             <TextBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Threads}" Margin="0,0,0,12"
                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
 
                             <TextBlock Grid.Row="5" Grid.Column="0" Text="GPU Layers:" VerticalAlignment="Center"
-                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{StaticResource TextSecondary}"/>
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
                             <TextBox Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding GpuLayers}" Margin="0,0,0,12"
                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
 
                             <TextBlock Grid.Row="6" Grid.Column="0" Text="Additional Args:" VerticalAlignment="Center"
-                                       FontWeight="Medium" Foreground="{StaticResource TextSecondary}"/>
+                                       FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
                             <TextBox Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding AdditionalArgs}"
                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
                         </Grid>
@@ -346,7 +346,7 @@
                         <GroupBox.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
-                                          Foreground="{StaticResource AccentCyan}"/>
+                                          Foreground="{DynamicResource AccentCyan}"/>
                                 <TextBlock Text="Server Logs" FontSize="16" FontWeight="SemiBold"/>
                             </StackPanel>
                         </GroupBox.Header>
@@ -359,7 +359,7 @@
                                         <TextBlock Text="{Binding}"
                                                   FontFamily="Consolas"
                                                   FontSize="12"
-                                                  Foreground="{StaticResource TextPrimary}"
+                                                  Foreground="{DynamicResource TextPrimary}"
                                                   TextWrapping="NoWrap"
                                                   Margin="0,2"/>
                                     </DataTemplate>
@@ -391,7 +391,7 @@
                         <GroupBox.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
-                                          Foreground="{StaticResource AccentPurple}"/>
+                                          Foreground="{DynamicResource AccentPurple}"/>
                                 <TextBlock Text="Select llama.cpp Variant" FontSize="16" FontWeight="SemiBold"/>
                             </StackPanel>
                         </GroupBox.Header>
@@ -408,7 +408,7 @@
 
                             <TextBlock Grid.Row="1" Text="{Binding SelectedVariant.Description}"
                                        TextWrapping="Wrap" FontStyle="Italic"
-                                       Foreground="{StaticResource TextSecondary}" LineHeight="20"/>
+                                       Foreground="{DynamicResource TextSecondary}" LineHeight="20"/>
                         </Grid>
                     </GroupBox>
 
@@ -417,14 +417,14 @@
                         <GroupBox.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE895;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
-                                          Foreground="{StaticResource AccentCyan}"/>
+                                          Foreground="{DynamicResource AccentCyan}"/>
                                 <TextBlock Text="Version Information" FontSize="16" FontWeight="SemiBold"/>
                             </StackPanel>
                         </GroupBox.Header>
                         <StackPanel>
-                            <TextBlock FontSize="14" Foreground="{StaticResource TextPrimary}">
+                            <TextBlock FontSize="14" Foreground="{DynamicResource TextPrimary}">
                                 <Run Text="Installed Version: " FontWeight="SemiBold"/>
-                                <Run Text="{Binding InstalledVersion, Mode=OneWay}" Foreground="{StaticResource AccentPrimary}"/>
+                                <Run Text="{Binding InstalledVersion, Mode=OneWay}" Foreground="{DynamicResource AccentPrimary}"/>
                             </TextBlock>
                         </StackPanel>
                     </GroupBox>
@@ -464,7 +464,7 @@
                             <ProgressBar Height="12" Value="{Binding DownloadProgress}" Maximum="100" Margin="0,0,0,16"/>
                             <TextBlock Text="{Binding DownloadProgress, StringFormat='{}Progress: {0}%'}"
                                        HorizontalAlignment="Center" FontWeight="SemiBold" FontSize="16"
-                                       Foreground="{StaticResource TextPrimary}"/>
+                                       Foreground="{DynamicResource TextPrimary}"/>
                         </StackPanel>
                     </GroupBox>
                 </Grid>
@@ -481,21 +481,21 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,16,0,0">
                     <StackPanel Margin="0,0,16,0">
                         <!-- Header Card -->
-                        <Border Background="{StaticResource BackgroundCard}"
-                                BorderBrush="{StaticResource BorderAccent}" BorderThickness="2"
+                        <Border Background="{DynamicResource BackgroundCard}"
+                                BorderBrush="{DynamicResource BorderAccent}" BorderThickness="2"
                                 CornerRadius="12" Padding="32" Margin="0,0,0,24">
                             <Border.Effect>
                                 <DropShadowEffect ShadowDepth="0" BlurRadius="30" Color="#0EA5E9" Opacity="0.4"/>
                             </Border.Effect>
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Text="&#xE753;" FontFamily="Segoe MDL2 Assets" FontSize="64"
-                                          Foreground="{StaticResource AccentGradient}"
+                                          Foreground="{DynamicResource AccentGradient}"
                                           HorizontalAlignment="Center" Margin="0,0,0,16"/>
                                 <TextBlock Text="LLAMA FORGE" FontSize="32" FontWeight="Bold"
-                                          Foreground="{StaticResource TextPrimary}" 
+                                          Foreground="{DynamicResource TextPrimary}" 
                                           HorizontalAlignment="Center"/>
                                 <TextBlock Text="A Modern WPF Wrapper for llama.cpp" FontSize="16"
-                                          Foreground="{StaticResource TextSecondary}" Margin="0,8,0,0"
+                                          Foreground="{DynamicResource TextSecondary}" Margin="0,8,0,0"
                                           HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
@@ -505,49 +505,49 @@
                             <GroupBox.Header>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="&#xE81E;" FontFamily="Segoe MDL2 Assets" FontSize="18" Margin="0,0,10,0"
-                                              Foreground="{StaticResource AccentPrimary}"/>
+                                              Foreground="{DynamicResource AccentPrimary}"/>
                                     <TextBlock Text="Features" FontSize="18" FontWeight="SemiBold"/>
                                 </StackPanel>
                             </GroupBox.Header>
                             <StackPanel>
-                                <Border Background="{StaticResource BackgroundSecondary}" CornerRadius="6" Padding="12" Margin="0,0,0,8">
+                                <Border Background="{DynamicResource BackgroundSecondary}" CornerRadius="6" Padding="12" Margin="0,0,0,8">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="&#xE896;" FontFamily="Segoe MDL2 Assets" FontSize="16"
-                                                  Foreground="{StaticResource AccentCyan}" Margin="0,0,12,0"/>
+                                                  Foreground="{DynamicResource AccentCyan}" Margin="0,0,12,0"/>
                                         <TextBlock Text="Download and manage multiple llama.cpp variants (CPU, CUDA, ROCm, Vulkan, etc.)"
-                                                  TextWrapping="Wrap" Foreground="{StaticResource TextPrimary}" LineHeight="22"/>
+                                                  TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}" LineHeight="22"/>
                                     </StackPanel>
                                 </Border>
-                                <Border Background="{StaticResource BackgroundSecondary}" CornerRadius="6" Padding="12" Margin="0,0,0,8">
+                                <Border Background="{DynamicResource BackgroundSecondary}" CornerRadius="6" Padding="12" Margin="0,0,0,8">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="&#xE768;" FontFamily="Segoe MDL2 Assets" FontSize="16"
                                                   Foreground="{StaticResource SuccessColor}" Margin="0,0,12,0"/>
                                         <TextBlock Text="Start and stop local llama.cpp server with easy configuration"
-                                                  TextWrapping="Wrap" Foreground="{StaticResource TextPrimary}" LineHeight="22"/>
+                                                  TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}" LineHeight="22"/>
                                     </StackPanel>
                                 </Border>
-                                <Border Background="{StaticResource BackgroundSecondary}" CornerRadius="6" Padding="12" Margin="0,0,0,8">
+                                <Border Background="{DynamicResource BackgroundSecondary}" CornerRadius="6" Padding="12" Margin="0,0,0,8">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="&#xE8F2;" FontFamily="Segoe MDL2 Assets" FontSize="16"
-                                                  Foreground="{StaticResource AccentPurple}" Margin="0,0,12,0"/>
+                                                  Foreground="{DynamicResource AccentPurple}" Margin="0,0,12,0"/>
                                         <TextBlock Text="Modern chat interface for interacting with AI models"
-                                                  TextWrapping="Wrap" Foreground="{StaticResource TextPrimary}" LineHeight="22"/>
+                                                  TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}" LineHeight="22"/>
                                     </StackPanel>
                                 </Border>
-                                <Border Background="{StaticResource BackgroundSecondary}" CornerRadius="6" Padding="12" Margin="0,0,0,8">
+                                <Border Background="{DynamicResource BackgroundSecondary}" CornerRadius="6" Padding="12" Margin="0,0,0,8">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="&#xE895;" FontFamily="Segoe MDL2 Assets" FontSize="16"
-                                                  Foreground="{StaticResource AccentSecondary}" Margin="0,0,12,0"/>
+                                                  Foreground="{DynamicResource AccentSecondary}" Margin="0,0,12,0"/>
                                         <TextBlock Text="Automatic update detection from GitHub"
-                                                  TextWrapping="Wrap" Foreground="{StaticResource TextPrimary}" LineHeight="22"/>
+                                                  TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}" LineHeight="22"/>
                                     </StackPanel>
                                 </Border>
-                                <Border Background="{StaticResource BackgroundSecondary}" CornerRadius="6" Padding="12">
+                                <Border Background="{DynamicResource BackgroundSecondary}" CornerRadius="6" Padding="12">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" FontSize="16"
                                                   Foreground="{StaticResource WarningColor}" Margin="0,0,12,0"/>
                                         <TextBlock Text="Real-time server monitoring and logging"
-                                                  TextWrapping="Wrap" Foreground="{StaticResource TextPrimary}" LineHeight="22"/>
+                                                  TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}" LineHeight="22"/>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
@@ -564,21 +564,21 @@
                             </GroupBox.Header>
                             <StackPanel>
                                 <TextBlock Text="1. Go to the Download / Update tab" Margin="0,0,0,8"
-                                          Foreground="{StaticResource TextPrimary}" FontSize="14"/>
+                                          Foreground="{DynamicResource TextPrimary}" FontSize="14"/>
                                 <TextBlock Text="2. Select a variant (e.g., CUDA for NVIDIA GPUs, CPU for CPU-only)" Margin="0,0,0,8"
-                                          Foreground="{StaticResource TextPrimary}" FontSize="14"/>
+                                          Foreground="{DynamicResource TextPrimary}" FontSize="14"/>
                                 <TextBlock Text="3. Click Download Selected to download llama.cpp" Margin="0,0,0,8"
-                                          Foreground="{StaticResource TextPrimary}" FontSize="14"/>
+                                          Foreground="{DynamicResource TextPrimary}" FontSize="14"/>
                                 <TextBlock Text="4. Go to the Server tab" Margin="0,0,0,8"
-                                          Foreground="{StaticResource TextPrimary}" FontSize="14"/>
+                                          Foreground="{DynamicResource TextPrimary}" FontSize="14"/>
                                 <TextBlock Text="5. Browse and select a GGUF model file" Margin="0,0,0,8"
-                                          Foreground="{StaticResource TextPrimary}" FontSize="14"/>
+                                          Foreground="{DynamicResource TextPrimary}" FontSize="14"/>
                                 <TextBlock Text="6. Configure server settings (GPU layers, context size, etc.)" Margin="0,0,0,8"
-                                          Foreground="{StaticResource TextPrimary}" FontSize="14"/>
+                                          Foreground="{DynamicResource TextPrimary}" FontSize="14"/>
                                 <TextBlock Text="7. Click Start Server" Margin="0,0,0,8"
-                                          Foreground="{StaticResource TextPrimary}" FontSize="14"/>
+                                          Foreground="{DynamicResource TextPrimary}" FontSize="14"/>
                                 <TextBlock Text="8. Go to the Chat tab and start chatting!" Margin="0,0,0,0"
-                                          Foreground="{StaticResource AccentPrimary}" FontSize="14" FontWeight="SemiBold"/>
+                                          Foreground="{DynamicResource AccentPrimary}" FontSize="14" FontWeight="SemiBold"/>
                             </StackPanel>
                         </GroupBox>
 
@@ -592,20 +592,20 @@
                                 </StackPanel>
                             </GroupBox.Header>
                             <StackPanel>
-                                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{StaticResource TextPrimary}" LineHeight="22">
-                                    <Run Text="•" FontWeight="Bold" Foreground="{StaticResource AccentPrimary}"/>
+                                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource TextPrimary}" LineHeight="22">
+                                    <Run Text="•" FontWeight="Bold" Foreground="{DynamicResource AccentPrimary}"/>
                                     <Run Text=" Use Ctrl+Enter to send messages in the chat"/>
                                 </TextBlock>
-                                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{StaticResource TextPrimary}" LineHeight="22">
-                                    <Run Text="•" FontWeight="Bold" Foreground="{StaticResource AccentPrimary}"/>
+                                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource TextPrimary}" LineHeight="22">
+                                    <Run Text="•" FontWeight="Bold" Foreground="{DynamicResource AccentPrimary}"/>
                                     <Run Text=" GPU Layers: Set to 0 for CPU-only, or higher values to offload layers to GPU"/>
                                 </TextBlock>
-                                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{StaticResource TextPrimary}" LineHeight="22">
-                                    <Run Text="•" FontWeight="Bold" Foreground="{StaticResource AccentPrimary}"/>
+                                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource TextPrimary}" LineHeight="22">
+                                    <Run Text="•" FontWeight="Bold" Foreground="{DynamicResource AccentPrimary}"/>
                                     <Run Text=" Context Size: Larger values use more memory but allow longer conversations"/>
                                 </TextBlock>
-                                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextPrimary}" LineHeight="22">
-                                    <Run Text="•" FontWeight="Bold" Foreground="{StaticResource AccentPrimary}"/>
+                                <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}" LineHeight="22">
+                                    <Run Text="•" FontWeight="Bold" Foreground="{DynamicResource AccentPrimary}"/>
                                     <Run Text=" Check the Server Logs for detailed information about server status"/>
                                 </TextBlock>
                             </StackPanel>
@@ -616,18 +616,18 @@
                             <GroupBox.Header>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="&#xE71B;" FontFamily="Segoe MDL2 Assets" FontSize="18" Margin="0,0,10,0"
-                                              Foreground="{StaticResource AccentSecondary}"/>
+                                              Foreground="{DynamicResource AccentSecondary}"/>
                                     <TextBlock Text="Useful Links" FontSize="18" FontWeight="SemiBold"/>
                                 </StackPanel>
                             </GroupBox.Header>
                             <StackPanel>
-                                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{StaticResource TextPrimary}">
+                                <TextBlock TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource TextPrimary}">
                                     <Run Text="llama.cpp:" FontWeight="SemiBold"/>
-                                    <Run Text=" https://github.com/ggerganov/llama.cpp" Foreground="{StaticResource AccentCyan}"/>
+                                    <Run Text=" https://github.com/ggerganov/llama.cpp" Foreground="{DynamicResource AccentCyan}"/>
                                 </TextBlock>
-                                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextPrimary}">
+                                <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}">
                                     <Run Text="Models:" FontWeight="SemiBold"/>
-                                    <Run Text=" https://huggingface.co/models?search=gguf" Foreground="{StaticResource AccentCyan}"/>
+                                    <Run Text=" https://huggingface.co/models?search=gguf" Foreground="{DynamicResource AccentCyan}"/>
                                 </TextBlock>
                             </StackPanel>
                         </GroupBox>

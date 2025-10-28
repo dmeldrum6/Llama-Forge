@@ -162,6 +162,12 @@ namespace LlamaForge.Services
         {
             var extractPath = Path.Combine(_installPath, variant.Type.ToString());
 
+            // Check if directory exists first
+            if (!Directory.Exists(extractPath))
+            {
+                return Path.Combine(extractPath, "bin", "llama-server.exe");
+            }
+
             // Look for llama-server.exe in the extracted directory and subdirectories
             var serverExe = Directory.GetFiles(extractPath, "llama-server.exe", SearchOption.AllDirectories)
                 .FirstOrDefault();

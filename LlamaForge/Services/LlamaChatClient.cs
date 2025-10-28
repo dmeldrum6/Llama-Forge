@@ -88,7 +88,13 @@ namespace LlamaForge.Services
                 };
 
                 using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-                response.EnsureSuccessStatusCode();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    ErrorOccurred?.Invoke(this, $"HTTP {(int)response.StatusCode} error: {errorContent}");
+                    return string.Empty;
+                }
 
                 using var stream = await response.Content.ReadAsStreamAsync();
                 using var reader = new System.IO.StreamReader(stream);
@@ -117,16 +123,24 @@ namespace LlamaForge.Services
                                 }
                             }
                         }
-                        catch
+                        catch (Exception parseEx)
                         {
-                            // Skip malformed JSON chunks
+                            ErrorOccurred?.Invoke(this, $"JSON parse error: {parseEx.Message} | Data: {data}");
                         }
                     }
                 }
             }
+            catch (HttpRequestException httpEx)
+            {
+                ErrorOccurred?.Invoke(this, $"HTTP request error: {httpEx.Message}. Is the server running and accessible at {_baseUrl}?");
+            }
+            catch (TaskCanceledException)
+            {
+                ErrorOccurred?.Invoke(this, "Request timed out. The model might be too large or slow to respond.");
+            }
             catch (Exception ex)
             {
-                ErrorOccurred?.Invoke(this, $"Streaming error: {ex.Message}");
+                ErrorOccurred?.Invoke(this, $"Streaming error: {ex.GetType().Name} - {ex.Message}");
             }
 
             return fullResponse.ToString();
@@ -137,7 +151,13 @@ namespace LlamaForge.Services
             try
             {
                 var response = await _httpClient.PostAsync($"{_baseUrl}/v1/chat/completions", content);
-                response.EnsureSuccessStatusCode();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    ErrorOccurred?.Invoke(this, $"HTTP {(int)response.StatusCode} error: {errorContent}");
+                    return string.Empty;
+                }
 
                 var responseBody = await response.Content.ReadAsStringAsync();
                 var json = JsonConvert.DeserializeObject<dynamic>(responseBody);
@@ -147,11 +167,22 @@ namespace LlamaForge.Services
                     return json.choices[0].message.content;
                 }
 
+                ErrorOccurred?.Invoke(this, "Response received but no content in choices array");
+                return string.Empty;
+            }
+            catch (HttpRequestException httpEx)
+            {
+                ErrorOccurred?.Invoke(this, $"HTTP request error: {httpEx.Message}. Is the server running and accessible at {_baseUrl}?");
+                return string.Empty;
+            }
+            catch (TaskCanceledException)
+            {
+                ErrorOccurred?.Invoke(this, "Request timed out. The model might be too large or slow to respond.");
                 return string.Empty;
             }
             catch (Exception ex)
             {
-                ErrorOccurred?.Invoke(this, $"Request error: {ex.Message}");
+                ErrorOccurred?.Invoke(this, $"Request error: {ex.GetType().Name} - {ex.Message}");
                 return string.Empty;
             }
         }

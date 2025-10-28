@@ -352,16 +352,21 @@
                         </GroupBox.Header>
                         <ScrollViewer VerticalScrollBarVisibility="Auto"
                                      HorizontalScrollBarVisibility="Auto"
-                                     MinHeight="200">
+                                     MinHeight="200"
+                                     Padding="0,0,0,16">
                             <ItemsControl ItemsSource="{Binding ServerLogs}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding}"
-                                                  FontFamily="Consolas"
-                                                  FontSize="12"
-                                                  Foreground="{DynamicResource TextPrimary}"
-                                                  TextWrapping="NoWrap"
-                                                  Margin="0,2"/>
+                                        <TextBox Text="{Binding, Mode=OneWay}"
+                                                 FontFamily="Consolas"
+                                                 FontSize="12"
+                                                 Foreground="{DynamicResource TextPrimary}"
+                                                 Background="Transparent"
+                                                 BorderThickness="0"
+                                                 IsReadOnly="True"
+                                                 TextWrapping="NoWrap"
+                                                 Margin="0,2"
+                                                 Cursor="IBeam"/>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>

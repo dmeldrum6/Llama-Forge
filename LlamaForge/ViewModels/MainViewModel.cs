@@ -246,7 +246,7 @@ namespace LlamaForge.ViewModels
 
                 _serverManager = new LlamaServerManager(Config, executablePath);
                 _serverManager.OutputReceived += (s, log) => AddServerLog(log);
-                _serverManager.ErrorReceived += (s, log) => AddServerLog($"ERROR: {log}");
+                _serverManager.ErrorReceived += (s, log) => AddServerLog(log);
                 _serverManager.ServerStatusChanged += (s, running) =>
                 {
                     AddServerLog($"Server status changed: {(running ? "Running" : "Stopped")}");

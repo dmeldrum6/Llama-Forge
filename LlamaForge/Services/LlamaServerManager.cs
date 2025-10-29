@@ -150,10 +150,9 @@ namespace LlamaForge.Services
             args += $"-c {_config.ContextSize} ";
             args += $"-t {_config.Threads} ";
 
-            if (_config.GpuLayers > 0)
-            {
-                args += $"-ngl {_config.GpuLayers} ";
-            }
+            // Always pass -ngl to ensure GPU layers setting is respected
+            // -ngl 0 = CPU only, -ngl N = offload N layers to GPU
+            args += $"-ngl {_config.GpuLayers} ";
 
             if (!string.IsNullOrWhiteSpace(_config.AdditionalArgs))
             {

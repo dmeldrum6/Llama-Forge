@@ -149,94 +149,173 @@ namespace LlamaForge.ViewModels
 
         public MainViewModel()
         {
-            var installPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "LlamaForge",
-                "llama-cpp"
-            );
-
-            _githubService = new GitHubService(installPath);
-            _githubService.DownloadProgressChanged += (s, e) => DownloadProgress = e.ProgressPercentage;
-            _githubService.StatusChanged += (s, message) => AddServerLog(message);
-
-            // Initialize available variants
-            foreach (var variant in LlamaVariant.GetAvailableVariants())
+            try
             {
-                AvailableVariants.Add(variant);
+                Console.WriteLine("=== MainViewModel constructor started ===");
+                System.Diagnostics.Debug.WriteLine("=== MainViewModel constructor started ===");
+
+                var installPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "LlamaForge",
+                    "llama-cpp"
+                );
+
+                Console.WriteLine($"Install path: {installPath}");
+                System.Diagnostics.Debug.WriteLine($"Install path: {installPath}");
+
+                _githubService = new GitHubService(installPath);
+                _githubService.DownloadProgressChanged += (s, e) => DownloadProgress = e.ProgressPercentage;
+                _githubService.StatusChanged += (s, message) => AddServerLog(message);
+
+                Console.WriteLine("GitHubService initialized");
+                System.Diagnostics.Debug.WriteLine("GitHubService initialized");
+
+                // Initialize available variants
+                foreach (var variant in LlamaVariant.GetAvailableVariants())
+                {
+                    AvailableVariants.Add(variant);
+                    Console.WriteLine($"Added variant: {variant.DisplayName}");
+                }
+
+                Console.WriteLine($"Total variants: {AvailableVariants.Count}");
+                System.Diagnostics.Debug.WriteLine($"Total variants: {AvailableVariants.Count}");
+
+                // Commands
+                StartServerCommand = new RelayCommand(async _ => await StartServerAsync(), _ => CanStartServer);
+                StopServerCommand = new RelayCommand(_ => StopServer(), _ => CanStopServer);
+                SendMessageCommand = new RelayCommand(async _ => await SendMessageAsync(), _ => CanSendMessage);
+                BrowseModelCommand = new RelayCommand(_ => BrowseModel());
+                CheckUpdatesCommand = new RelayCommand(async _ => await CheckForUpdatesAsync());
+                DownloadVariantCommand = new RelayCommand(async _ => await DownloadSelectedVariantAsync());
+                ClearChatCommand = new RelayCommand(_ => ChatMessages.Clear());
+                ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
+
+                Console.WriteLine("Commands initialized");
+                System.Diagnostics.Debug.WriteLine("Commands initialized");
+
+                // Load settings
+                LoadSettings();
+
+                Console.WriteLine("=== MainViewModel constructor completed ===");
+                System.Diagnostics.Debug.WriteLine("=== MainViewModel constructor completed ===");
+
+                // Test logging after constructor completes
+                AddServerLog("Llama Forge initialized successfully");
             }
-
-            // Commands
-            StartServerCommand = new RelayCommand(async _ => await StartServerAsync(), _ => CanStartServer);
-            StopServerCommand = new RelayCommand(_ => StopServer(), _ => CanStopServer);
-            SendMessageCommand = new RelayCommand(async _ => await SendMessageAsync(), _ => CanSendMessage);
-            BrowseModelCommand = new RelayCommand(_ => BrowseModel());
-            CheckUpdatesCommand = new RelayCommand(async _ => await CheckForUpdatesAsync());
-            DownloadVariantCommand = new RelayCommand(async _ => await DownloadSelectedVariantAsync());
-            ClearChatCommand = new RelayCommand(_ => ChatMessages.Clear());
-            ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
-
-            // Load settings
-            LoadSettings();
+            catch (Exception ex)
+            {
+                var errorMsg = $"FATAL ERROR in MainViewModel constructor: {ex.GetType().Name} - {ex.Message}\nStack trace: {ex.StackTrace}";
+                Console.WriteLine(errorMsg);
+                System.Diagnostics.Debug.WriteLine(errorMsg);
+                MessageBox.Show($"Critical error during initialization:\n\n{ex.Message}\n\nThe application may not function correctly.", "Initialization Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async Task StartServerAsync()
         {
-            if (SelectedVariant == null)
+            try
             {
-                StatusMessage = "Please select a variant first.";
-                return;
-            }
+                AddServerLog("=== StartServerAsync called ===");
 
-            var executablePath = _githubService.GetServerExecutablePath(SelectedVariant);
-
-            if (!File.Exists(executablePath))
-            {
-                StatusMessage = $"Server executable not found. Please download {SelectedVariant.DisplayName} first.";
-                return;
-            }
-
-            IsBusy = true;
-            StatusMessage = "Starting server...";
-
-            _serverManager = new LlamaServerManager(Config, executablePath);
-            _serverManager.OutputReceived += (s, log) => AddServerLog(log);
-            _serverManager.ErrorReceived += (s, log) => AddServerLog($"ERROR: {log}");
-            _serverManager.ServerStatusChanged += (s, running) =>
-            {
-                Application.Current.Dispatcher.Invoke(() =>
+                if (SelectedVariant == null)
                 {
-                    IsServerRunning = running;
-                    StatusMessage = running ? "Server is running" : "Server stopped";
-                });
-            };
+                    StatusMessage = "Please select a variant first.";
+                    AddServerLog("ERROR: No variant selected");
+                    return;
+                }
 
-            var success = await _serverManager.StartServerAsync();
+                AddServerLog($"Selected variant: {SelectedVariant.DisplayName}");
 
-            if (success)
-            {
-                _chatClient = new LlamaChatClient(Host, Port);
-                _chatClient.ResponseChunkReceived += OnResponseChunkReceived;
-                _chatClient.ErrorOccurred += (s, error) => AddServerLog($"Chat Error: {error}");
+                var executablePath = _githubService.GetServerExecutablePath(SelectedVariant);
+                AddServerLog($"Executable path: {executablePath}");
 
-                // Wait for server to be ready
-                await Task.Delay(3000);
-
-                var isHealthy = await _chatClient.CheckHealthAsync();
-                if (isHealthy)
+                if (!File.Exists(executablePath))
                 {
-                    StatusMessage = "Server is ready!";
+                    StatusMessage = $"Server executable not found. Please download {SelectedVariant.DisplayName} first.";
+                    AddServerLog($"ERROR: Executable not found at: {executablePath}");
+                    return;
+                }
+
+                AddServerLog("Executable file exists, proceeding with server startup");
+
+                IsBusy = true;
+                StatusMessage = "Starting server...";
+
+                AddServerLog($"Model path: {Config.ModelPath}");
+                AddServerLog($"Server config - Host: {Config.Host}, Port: {Config.Port}, Context: {Config.ContextSize}, Threads: {Config.Threads}, GPU Layers: {Config.GpuLayers}");
+
+                _serverManager = new LlamaServerManager(Config, executablePath);
+                _serverManager.OutputReceived += (s, log) => AddServerLog(log);
+                _serverManager.ErrorReceived += (s, log) => AddServerLog($"ERROR: {log}");
+                _serverManager.ServerStatusChanged += (s, running) =>
+                {
+                    AddServerLog($"Server status changed: {(running ? "Running" : "Stopped")}");
+                    try
+                    {
+                        if (Application.Current?.Dispatcher != null)
+                        {
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                IsServerRunning = running;
+                                StatusMessage = running ? "Server is running" : "Server stopped";
+                            });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        AddServerLog($"ERROR in ServerStatusChanged handler: {ex.Message}");
+                    }
+                };
+
+                AddServerLog("Calling _serverManager.StartServerAsync()...");
+                var success = await _serverManager.StartServerAsync();
+                AddServerLog($"StartServerAsync returned: {success}");
+
+                if (success)
+                {
+                    AddServerLog($"Creating LlamaChatClient for {Host}:{Port}");
+                    _chatClient = new LlamaChatClient(Host, Port);
+                    _chatClient.ResponseChunkReceived += OnResponseChunkReceived;
+                    _chatClient.ErrorOccurred += (s, error) => AddServerLog($"Chat Error: {error}");
+
+                    // Wait for server to be ready
+                    AddServerLog("Waiting 3 seconds for server to initialize...");
+                    await Task.Delay(3000);
+
+                    AddServerLog("Performing health check...");
+                    var isHealthy = await _chatClient.CheckHealthAsync();
+                    AddServerLog($"Health check result: {isHealthy}");
+
+                    if (isHealthy)
+                    {
+                        StatusMessage = "Server is ready!";
+                        AddServerLog("=== Server startup completed successfully ===");
+                    }
+                    else
+                    {
+                        StatusMessage = "Server started but health check failed. Check logs.";
+                        AddServerLog("WARNING: Health check failed");
+                    }
                 }
                 else
                 {
-                    StatusMessage = "Server started but health check failed. Check logs.";
+                    StatusMessage = "Failed to start server. Check logs.";
+                    AddServerLog("ERROR: Server startup failed");
                 }
-            }
-            else
-            {
-                StatusMessage = "Failed to start server. Check logs.";
-            }
 
-            IsBusy = false;
+                AddServerLog("=== StartServerAsync finished ===");
+            }
+            catch (Exception ex)
+            {
+                var errorMsg = $"FATAL ERROR in StartServerAsync: {ex.GetType().Name} - {ex.Message}\nStack trace: {ex.StackTrace}";
+                AddServerLog(errorMsg);
+                StatusMessage = $"Fatal error: {ex.Message}";
+                MessageBox.Show($"An error occurred while starting the server:\n\n{ex.Message}\n\nCheck the logs for more details.", "Server Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         private void StopServer()
@@ -421,16 +500,55 @@ namespace LlamaForge.ViewModels
 
         private void AddServerLog(string message)
         {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                ServerLogs.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
+            var logEntry = $"[{DateTime.Now:HH:mm:ss}] {message}";
 
-                // Keep only last 1000 logs
-                while (ServerLogs.Count > 1000)
+            // Fallback logging to console/debug output
+            System.Diagnostics.Debug.WriteLine(logEntry);
+            Console.WriteLine(logEntry);
+
+            try
+            {
+                if (Application.Current?.Dispatcher != null)
                 {
-                    ServerLogs.RemoveAt(0);
+                    if (Application.Current.Dispatcher.CheckAccess())
+                    {
+                        // Already on UI thread
+                        ServerLogs.Add(logEntry);
+
+                        // Keep only last 1000 logs
+                        while (ServerLogs.Count > 1000)
+                        {
+                            ServerLogs.RemoveAt(0);
+                        }
+                    }
+                    else
+                    {
+                        // Need to invoke on UI thread
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            ServerLogs.Add(logEntry);
+
+                            // Keep only last 1000 logs
+                            while (ServerLogs.Count > 1000)
+                            {
+                                ServerLogs.RemoveAt(0);
+                            }
+                        });
+                    }
                 }
-            });
+                else
+                {
+                    Console.WriteLine("ERROR: Application.Current or Dispatcher is null!");
+                    System.Diagnostics.Debug.WriteLine("ERROR: Application.Current or Dispatcher is null!");
+                }
+            }
+            catch (Exception ex)
+            {
+                // If logging to UI fails, at least log to console/debug
+                var errorMsg = $"ERROR in AddServerLog: {ex.Message}\n{ex.StackTrace}";
+                Console.WriteLine(errorMsg);
+                System.Diagnostics.Debug.WriteLine(errorMsg);
+            }
         }
 
         private void LoadSettings()

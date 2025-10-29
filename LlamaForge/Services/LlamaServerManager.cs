@@ -154,6 +154,12 @@ namespace LlamaForge.Services
             // -ngl 0 = CPU only, -ngl N = offload N layers to GPU
             args += $"-ngl {_config.GpuLayers} ";
 
+            // Enable verbose logging to diagnose chat issues
+            args += "--verbose ";
+
+            // Enable request logging to see incoming requests
+            args += "--log-format text ";
+
             if (!string.IsNullOrWhiteSpace(_config.AdditionalArgs))
             {
                 args += _config.AdditionalArgs;

@@ -26,6 +26,8 @@ namespace LlamaForge.Services
             };
         }
 
+        public string GetBaseUrl() => _baseUrl;
+
         public async Task<bool> CheckHealthAsync()
         {
             try
@@ -36,6 +38,57 @@ namespace LlamaForge.Services
             catch
             {
                 return false;
+            }
+        }
+
+        public async Task<string> GetModelInfoAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_baseUrl}/v1/models");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    return content;
+                }
+                return $"Failed to get model info: HTTP {(int)response.StatusCode}";
+            }
+            catch (Exception ex)
+            {
+                return $"Error getting model info: {ex.Message}";
+            }
+        }
+
+        public async Task<string> TestChatEndpointAsync()
+        {
+            try
+            {
+                // Send a minimal test request
+                var testMessage = new[]
+                {
+                    new { role = "user", content = "Hi" }
+                };
+
+                var requestBody = new
+                {
+                    messages = testMessage,
+                    max_tokens = 10,
+                    stream = false
+                };
+
+                var content = new StringContent(
+                    JsonConvert.SerializeObject(requestBody),
+                    Encoding.UTF8,
+                    "application/json");
+
+                var response = await _httpClient.PostAsync($"{_baseUrl}/v1/chat/completions", content);
+                var responseBody = await response.Content.ReadAsStringAsync();
+
+                return $"Status: {(int)response.StatusCode} {response.StatusCode}\nResponse: {responseBody}";
+            }
+            catch (Exception ex)
+            {
+                return $"Test failed: {ex.Message}";
             }
         }
 
@@ -79,6 +132,8 @@ namespace LlamaForge.Services
         private async Task<string> SendStreamingRequestAsync(StringContent content)
         {
             var fullResponse = new StringBuilder();
+            int lineCount = 0;
+            int chunkCount = 0;
 
             try
             {
@@ -87,7 +142,11 @@ namespace LlamaForge.Services
                     Content = content
                 };
 
+                ErrorOccurred?.Invoke(this, $"[Chat] Sending POST to {_baseUrl}/v1/chat/completions");
+
                 using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+                ErrorOccurred?.Invoke(this, $"[Chat] HTTP Status: {(int)response.StatusCode} {response.StatusCode}");
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -99,15 +158,26 @@ namespace LlamaForge.Services
                 using var stream = await response.Content.ReadAsStreamAsync();
                 using var reader = new System.IO.StreamReader(stream);
 
+                ErrorOccurred?.Invoke(this, $"[Chat] Starting to read response stream...");
+
                 string? line;
                 while ((line = await reader.ReadLineAsync()) != null)
                 {
+                    lineCount++;
+                    if (lineCount <= 3 || lineCount % 10 == 0)
+                    {
+                        ErrorOccurred?.Invoke(this, $"[Chat] Line {lineCount}: {(line.Length > 100 ? line.Substring(0, 100) + "..." : line)}");
+                    }
+
                     if (line.StartsWith("data: "))
                     {
                         var data = line.Substring(6);
 
                         if (data == "[DONE]")
+                        {
+                            ErrorOccurred?.Invoke(this, $"[Chat] Received [DONE] signal. Total chunks: {chunkCount}");
                             break;
+                        }
 
                         try
                         {
@@ -118,8 +188,25 @@ namespace LlamaForge.Services
                                 if (delta?.content != null)
                                 {
                                     string chunk = delta.content;
+                                    chunkCount++;
                                     fullResponse.Append(chunk);
                                     ResponseChunkReceived?.Invoke(this, chunk);
+
+                                    if (chunkCount == 1)
+                                    {
+                                        ErrorOccurred?.Invoke(this, $"[Chat] First chunk received: '{chunk}'");
+                                    }
+                                }
+                                else if (chunkCount == 0)
+                                {
+                                    ErrorOccurred?.Invoke(this, $"[Chat] Response has choices but no content in delta. Delta keys: {string.Join(", ", ((IDictionary<string, object>)delta).Keys)}");
+                                }
+                            }
+                            else
+                            {
+                                if (lineCount <= 5)
+                                {
+                                    ErrorOccurred?.Invoke(this, $"[Chat] No choices in JSON: {data}");
                                 }
                             }
                         }
@@ -129,6 +216,8 @@ namespace LlamaForge.Services
                         }
                     }
                 }
+
+                ErrorOccurred?.Invoke(this, $"[Chat] Stream complete. Total lines: {lineCount}, chunks: {chunkCount}, response length: {fullResponse.Length}");
             }
             catch (HttpRequestException httpEx)
             {

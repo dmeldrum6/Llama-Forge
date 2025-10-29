@@ -197,17 +197,6 @@ namespace LlamaForge.Services
                                         ErrorOccurred?.Invoke(this, $"[Chat] First chunk received: '{chunk}'");
                                     }
                                 }
-                                else if (chunkCount == 0)
-                                {
-                                    ErrorOccurred?.Invoke(this, $"[Chat] Response has choices but no content in delta. Delta keys: {string.Join(", ", ((IDictionary<string, object>)delta).Keys)}");
-                                }
-                            }
-                            else
-                            {
-                                if (lineCount <= 5)
-                                {
-                                    ErrorOccurred?.Invoke(this, $"[Chat] No choices in JSON: {data}");
-                                }
                             }
                         }
                         catch (Exception parseEx)

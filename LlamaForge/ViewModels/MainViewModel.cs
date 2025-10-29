@@ -397,9 +397,8 @@ namespace LlamaForge.ViewModels
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
+                        // ChatMessage now implements INotifyPropertyChanged, so the UI will update automatically
                         lastMessage.Content = response;
-                        var index = ChatMessages.IndexOf(lastMessage);
-                        ChatMessages[index] = lastMessage;
                     });
                 }
                 else if (lastMessage != null && string.IsNullOrEmpty(lastMessage.Content))
@@ -436,10 +435,8 @@ namespace LlamaForge.ViewModels
                 var lastMessage = ChatMessages.LastOrDefault(m => m.Role == "assistant");
                 if (lastMessage != null)
                 {
+                    // ChatMessage now implements INotifyPropertyChanged, so the UI will update automatically
                     lastMessage.Content += chunk;
-                    // Force UI update
-                    var index = ChatMessages.IndexOf(lastMessage);
-                    ChatMessages[index] = lastMessage;
                 }
             });
         }

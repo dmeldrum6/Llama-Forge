@@ -290,6 +290,33 @@ namespace LlamaForge.ViewModels
                     {
                         StatusMessage = "Server is ready!";
                         AddServerLog("=== Server startup completed successfully ===");
+
+                        // Run diagnostics
+                        AddServerLog("=== Running Chat Diagnostics ===");
+
+                        try
+                        {
+                            AddServerLog("Checking model info...");
+                            var modelInfo = await _chatClient.GetModelInfoAsync();
+                            AddServerLog($"Model info: {modelInfo}");
+                        }
+                        catch (Exception ex)
+                        {
+                            AddServerLog($"Failed to get model info: {ex.Message}");
+                        }
+
+                        try
+                        {
+                            AddServerLog("Testing chat completions endpoint...");
+                            var testResult = await _chatClient.TestChatEndpointAsync();
+                            AddServerLog($"Chat endpoint test result:\n{testResult}");
+                        }
+                        catch (Exception ex)
+                        {
+                            AddServerLog($"Failed to test chat endpoint: {ex.Message}");
+                        }
+
+                        AddServerLog("=== Diagnostics Complete ===");
                     }
                     else
                     {
@@ -356,9 +383,13 @@ namespace LlamaForge.ViewModels
             // Get only messages with content for the API call
             var messages = ChatMessages.Where(m => !string.IsNullOrEmpty(m.Content)).ToList();
 
+            AddServerLog($"[Chat] Sending {messages.Count} message(s) to server at {_chatClient.GetBaseUrl()}");
+            AddServerLog($"[Chat] Last user message: {userMessage.Content.Substring(0, Math.Min(50, userMessage.Content.Length))}...");
+
             try
             {
                 var response = await _chatClient.SendChatMessageAsync(messages, stream: true);
+                AddServerLog($"[Chat] Request completed. Response length: {response?.Length ?? 0} characters");
 
                 // If streaming didn't populate the message (no chunks received), check if we got a response
                 var lastMessage = ChatMessages.LastOrDefault(m => m.Role == "assistant");

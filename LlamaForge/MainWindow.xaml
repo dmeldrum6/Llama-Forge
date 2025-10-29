@@ -249,11 +249,39 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Server Configuration -->
+                    <!-- Variant Selection -->
                     <GroupBox Grid.Row="0" Margin="0,0,0,16">
+                        <GroupBox.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
+                                          Foreground="{DynamicResource AccentPurple}"/>
+                                <TextBlock Text="Select llama.cpp Variant" FontSize="16" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </GroupBox.Header>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <ComboBox Grid.Row="0" ItemsSource="{Binding AvailableVariants}"
+                                      SelectedItem="{Binding SelectedVariant}"
+                                      DisplayMemberPath="DisplayName"
+                                      Height="40" Margin="0,0,0,12"
+                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+
+                            <TextBlock Grid.Row="1" Text="{Binding SelectedVariant.Description}"
+                                       TextWrapping="Wrap" FontStyle="Italic"
+                                       Foreground="{DynamicResource TextSecondary}" LineHeight="20"/>
+                        </Grid>
+                    </GroupBox>
+
+                    <!-- Server Configuration -->
+                    <GroupBox Grid.Row="1" Margin="0,0,0,16">
                         <GroupBox.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE115;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
@@ -322,7 +350,7 @@
                     </GroupBox>
 
                     <!-- Server Controls -->
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,16">
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,16">
                         <Button Width="160" Height="48" Margin="0,0,16,0"
                                 Command="{Binding StartServerCommand}"
                                 Style="{StaticResource SuccessButton}">
@@ -342,7 +370,7 @@
                     </StackPanel>
 
                     <!-- Server Logs -->
-                    <GroupBox Grid.Row="2">
+                    <GroupBox Grid.Row="3">
                         <GroupBox.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
@@ -387,38 +415,11 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Variant Selection -->
-                    <GroupBox Grid.Row="0" Margin="0,0,0,16">
-                        <GroupBox.Header>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
-                                          Foreground="{DynamicResource AccentPurple}"/>
-                                <TextBlock Text="Select llama.cpp Variant" FontSize="16" FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </GroupBox.Header>
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <ComboBox Grid.Row="0" ItemsSource="{Binding AvailableVariants}"
-                                      SelectedItem="{Binding SelectedVariant}"
-                                      DisplayMemberPath="DisplayName"
-                                      Height="40" Margin="0,0,0,12"/>
-
-                            <TextBlock Grid.Row="1" Text="{Binding SelectedVariant.Description}"
-                                       TextWrapping="Wrap" FontStyle="Italic"
-                                       Foreground="{DynamicResource TextSecondary}" LineHeight="20"/>
-                        </Grid>
-                    </GroupBox>
-
                     <!-- Version Info -->
-                    <GroupBox Grid.Row="1" Margin="0,0,0,16">
+                    <GroupBox Grid.Row="0" Margin="0,0,0,16">
                         <GroupBox.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE895;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
@@ -435,7 +436,7 @@
                     </GroupBox>
 
                     <!-- Download Controls -->
-                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,16">
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,16">
                         <Button Width="180" Height="48" Margin="0,0,16,0"
                                 Command="{Binding CheckUpdatesCommand}"
                                 Style="{StaticResource AccentButton}"
@@ -457,7 +458,7 @@
                     </StackPanel>
 
                     <!-- Download Progress -->
-                    <GroupBox Grid.Row="3">
+                    <GroupBox Grid.Row="2">
                         <GroupBox.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE9F5;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"

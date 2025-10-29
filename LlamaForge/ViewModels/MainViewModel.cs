@@ -16,6 +16,7 @@ namespace LlamaForge.ViewModels
     public class MainViewModel : INotifyPropertyChanged
     {
         private readonly GitHubService _githubService;
+        private readonly SettingsService _settingsService;
         private LlamaServerManager? _serverManager;
         private LlamaChatClient? _chatClient;
 
@@ -70,6 +71,7 @@ namespace LlamaForge.ViewModels
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(InstalledVersion));
                 UpdateServerExecutablePath();
+                SaveSettings();
             }
         }
 
@@ -77,49 +79,49 @@ namespace LlamaForge.ViewModels
         public string ModelPath
         {
             get => _modelPath;
-            set { _modelPath = value; OnPropertyChanged(); Config.ModelPath = value; }
+            set { _modelPath = value; OnPropertyChanged(); Config.ModelPath = value; SaveSettings(); }
         }
 
         private string _host = "127.0.0.1";
         public string Host
         {
             get => _host;
-            set { _host = value; OnPropertyChanged(); Config.Host = value; }
+            set { _host = value; OnPropertyChanged(); Config.Host = value; SaveSettings(); }
         }
 
         private int _port = 8080;
         public int Port
         {
             get => _port;
-            set { _port = value; OnPropertyChanged(); Config.Port = value; }
+            set { _port = value; OnPropertyChanged(); Config.Port = value; SaveSettings(); }
         }
 
         private int _contextSize = 2048;
         public int ContextSize
         {
             get => _contextSize;
-            set { _contextSize = value; OnPropertyChanged(); Config.ContextSize = value; }
+            set { _contextSize = value; OnPropertyChanged(); Config.ContextSize = value; SaveSettings(); }
         }
 
         private int _threads = 4;
         public int Threads
         {
             get => _threads;
-            set { _threads = value; OnPropertyChanged(); Config.Threads = value; }
+            set { _threads = value; OnPropertyChanged(); Config.Threads = value; SaveSettings(); }
         }
 
         private int _gpuLayers = 0;
         public int GpuLayers
         {
             get => _gpuLayers;
-            set { _gpuLayers = value; OnPropertyChanged(); Config.GpuLayers = value; }
+            set { _gpuLayers = value; OnPropertyChanged(); Config.GpuLayers = value; SaveSettings(); }
         }
 
         private string _additionalArgs = string.Empty;
         public string AdditionalArgs
         {
             get => _additionalArgs;
-            set { _additionalArgs = value; OnPropertyChanged(); Config.AdditionalArgs = value; }
+            set { _additionalArgs = value; OnPropertyChanged(); Config.AdditionalArgs = value; SaveSettings(); }
         }
 
         private bool _isDarkTheme = true;
@@ -166,6 +168,8 @@ namespace LlamaForge.ViewModels
                 _githubService = new GitHubService(installPath);
                 _githubService.DownloadProgressChanged += (s, e) => DownloadProgress = e.ProgressPercentage;
                 _githubService.StatusChanged += (s, message) => AddServerLog(message);
+
+                _settingsService = new SettingsService();
 
                 Console.WriteLine("GitHubService initialized");
                 System.Diagnostics.Debug.WriteLine("GitHubService initialized");
@@ -581,8 +585,85 @@ namespace LlamaForge.ViewModels
 
         private void LoadSettings()
         {
-            // TODO: Load settings from file
-            // For now, use defaults
+            try
+            {
+                var settings = _settingsService.LoadSettings();
+
+                // Load server configuration
+                if (settings.ServerConfig != null)
+                {
+                    _modelPath = settings.ServerConfig.ModelPath;
+                    _host = settings.ServerConfig.Host;
+                    _port = settings.ServerConfig.Port;
+                    _contextSize = settings.ServerConfig.ContextSize;
+                    _threads = settings.ServerConfig.Threads;
+                    _gpuLayers = settings.ServerConfig.GpuLayers;
+                    _additionalArgs = settings.ServerConfig.AdditionalArgs;
+
+                    // Update Config object
+                    Config.ModelPath = _modelPath;
+                    Config.Host = _host;
+                    Config.Port = _port;
+                    Config.ContextSize = _contextSize;
+                    Config.Threads = _threads;
+                    Config.GpuLayers = _gpuLayers;
+                    Config.AdditionalArgs = _additionalArgs;
+
+                    // Notify UI of changes
+                    OnPropertyChanged(nameof(ModelPath));
+                    OnPropertyChanged(nameof(Host));
+                    OnPropertyChanged(nameof(Port));
+                    OnPropertyChanged(nameof(ContextSize));
+                    OnPropertyChanged(nameof(Threads));
+                    OnPropertyChanged(nameof(GpuLayers));
+                    OnPropertyChanged(nameof(AdditionalArgs));
+                }
+
+                // Load selected variant
+                if (settings.SelectedVariantType.HasValue)
+                {
+                    var variant = AvailableVariants.FirstOrDefault(v => v.Type == settings.SelectedVariantType.Value);
+                    if (variant != null)
+                    {
+                        _selectedVariant = variant;
+                        OnPropertyChanged(nameof(SelectedVariant));
+                        OnPropertyChanged(nameof(InstalledVersion));
+                    }
+                }
+
+                AddServerLog("Settings loaded successfully");
+            }
+            catch (Exception ex)
+            {
+                AddServerLog($"Error loading settings: {ex.Message}");
+            }
+        }
+
+        private void SaveSettings()
+        {
+            try
+            {
+                var settings = new AppSettings
+                {
+                    ServerConfig = new ServerConfig
+                    {
+                        ModelPath = _modelPath,
+                        Host = _host,
+                        Port = _port,
+                        ContextSize = _contextSize,
+                        Threads = _threads,
+                        GpuLayers = _gpuLayers,
+                        AdditionalArgs = _additionalArgs
+                    },
+                    SelectedVariantType = _selectedVariant?.Type
+                };
+
+                _settingsService.SaveSettings(settings);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error saving settings: {ex.Message}");
+            }
         }
 
         private void ToggleTheme()

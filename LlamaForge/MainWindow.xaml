@@ -357,7 +357,7 @@
                             <ItemsControl ItemsSource="{Binding ServerLogs}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBox Text="{Binding, Mode=OneWay}"
+                                        <TextBox Text="{Binding Mode=OneWay}"
                                                  FontFamily="Consolas"
                                                  FontSize="12"
                                                  Foreground="{DynamicResource TextPrimary}"

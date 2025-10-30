@@ -200,13 +200,20 @@ namespace LlamaForge.ViewModels
                         Variant = variant,
                         IsSelected = false,
                         InstalledVersion = _githubService.GetInstalledVersion(variant) ?? "Not installed",
-                        LatestVersion = "Checking...",
+                        LatestVersion = "Unknown",
                         DownloadProgress = 0,
                         IsDownloading = false,
-                        StatusMessage = ""
+                        StatusMessage = "Click 'Check for Updates' to check latest version"
                     };
                     DownloadableVariants.Add(downloadableVariant);
                 }
+
+                // Automatically check for updates in the background after UI loads
+                Task.Run(async () =>
+                {
+                    await Task.Delay(1000); // Wait a bit for UI to fully load
+                    await CheckForUpdatesAsync();
+                });
 
                 // Commands
                 StartServerCommand = new RelayCommand(async _ => await StartServerAsync(), _ => CanStartServer);

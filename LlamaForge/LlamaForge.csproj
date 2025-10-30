@@ -17,6 +17,7 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="AvalonEdit" Version="6.3.0.90" />
   </ItemGroup>
 
 </Project>

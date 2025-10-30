@@ -28,6 +28,38 @@ namespace LlamaForge.Services
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "LlamaForge");
 
             Directory.CreateDirectory(_installPath);
+
+            // Clean up old directories from previous updates
+            CleanupOldDirectories();
+        }
+
+        private void CleanupOldDirectories()
+        {
+            try
+            {
+                if (!Directory.Exists(_installPath))
+                    return;
+
+                // Find all directories ending with _old_* pattern
+                var oldDirectories = Directory.GetDirectories(_installPath, "*_old_*");
+
+                foreach (var oldDir in oldDirectories)
+                {
+                    try
+                    {
+                        Directory.Delete(oldDir, true);
+                    }
+                    catch
+                    {
+                        // Ignore - the directory might still be in use
+                        // Will try again on next startup
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore cleanup errors - this is a best-effort operation
+            }
         }
 
         public async Task<GitHubRelease?> GetLatestReleaseAsync()
@@ -130,36 +162,55 @@ namespace LlamaForge.Services
                     // Now try to replace the old installation
                     if (Directory.Exists(extractPath))
                     {
-                        StatusChanged?.Invoke(this, "Removing old installation...");
+                        StatusChanged?.Invoke(this, "Moving old installation...");
 
-                        // Try to delete with retries in case files are being released
-                        var deleted = false;
+                        // Rename the old directory instead of deleting it
+                        // This allows the installation to succeed even if files are locked
+                        var oldPath = Path.Combine(_installPath, $"{variant.Type}_old_{DateTime.Now:yyyyMMdd_HHmmss}");
+                        var renamed = false;
+
+                        // Try to rename the directory (much less likely to fail than deletion)
                         for (int i = 0; i < 3; i++)
                         {
                             try
                             {
-                                Directory.Delete(extractPath, true);
-                                deleted = true;
+                                Directory.Move(extractPath, oldPath);
+                                renamed = true;
                                 break;
                             }
                             catch (UnauthorizedAccessException) when (i < 2)
                             {
-                                StatusChanged?.Invoke(this, $"Retrying to remove old files (attempt {i + 2}/3)...");
+                                StatusChanged?.Invoke(this, $"Retrying to move old files (attempt {i + 2}/3)...");
                                 await Task.Delay(1000);
                             }
                             catch (IOException) when (i < 2)
                             {
-                                StatusChanged?.Invoke(this, $"Retrying to remove old files (attempt {i + 2}/3)...");
+                                StatusChanged?.Invoke(this, $"Retrying to move old files (attempt {i + 2}/3)...");
                                 await Task.Delay(1000);
                             }
                         }
 
-                        if (!deleted)
+                        if (!renamed)
                         {
                             // Clean up temp directory
                             Directory.Delete(tempExtractPath, true);
-                            throw new Exception($"Cannot remove old installation at:\n{extractPath}\n\nThe files may be in use by another process. Please:\n1. Make sure the server is stopped\n2. Close any file explorers viewing this folder\n3. Check Task Manager for any running llama-server.exe processes");
+                            throw new Exception($"Cannot move old installation at:\n{extractPath}\n\nThe files may be in use by another process. Please:\n1. Make sure the server is stopped\n2. Close any file explorers viewing this folder\n3. Check Task Manager for any running llama-server.exe processes");
                         }
+
+                        // Try to delete the old directory in the background, but don't fail if it's locked
+                        // It will be cleaned up on next app startup
+                        Task.Run(async () =>
+                        {
+                            await Task.Delay(2000); // Wait a bit for file handles to be released
+                            try
+                            {
+                                Directory.Delete(oldPath, true);
+                            }
+                            catch
+                            {
+                                // Ignore - will be cleaned up on next startup
+                            }
+                        });
                     }
 
                     // Move the temp directory to the final location

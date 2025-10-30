@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -115,10 +116,56 @@ namespace LlamaForge.Services
                 .ToList();
         }
 
+        private async Task KillAllLlamaServerProcessesAsync()
+        {
+            try
+            {
+                StatusChanged?.Invoke(this, "Checking for running llama-server processes...");
+
+                var processes = Process.GetProcessesByName("llama-server");
+
+                if (processes.Length == 0)
+                {
+                    StatusChanged?.Invoke(this, "No llama-server processes found.");
+                    return;
+                }
+
+                StatusChanged?.Invoke(this, $"Found {processes.Length} llama-server process(es). Terminating...");
+
+                foreach (var process in processes)
+                {
+                    try
+                    {
+                        process.Kill(true); // Kill entire process tree
+                        process.WaitForExit(3000);
+                    }
+                    catch (Exception ex)
+                    {
+                        StatusChanged?.Invoke(this, $"Warning: Could not terminate process {process.Id}: {ex.Message}");
+                    }
+                    finally
+                    {
+                        process.Dispose();
+                    }
+                }
+
+                // Wait for file handles to be released
+                StatusChanged?.Invoke(this, "Waiting for file handles to be released...");
+                await Task.Delay(2000);
+            }
+            catch (Exception ex)
+            {
+                StatusChanged?.Invoke(this, $"Warning during process cleanup: {ex.Message}");
+            }
+        }
+
         public async Task<bool> DownloadAndInstallAsync(GitHubAsset asset, LlamaVariant variant)
         {
             try
             {
+                // Kill all llama-server processes before attempting file operations
+                await KillAllLlamaServerProcessesAsync();
+
                 StatusChanged?.Invoke(this, $"Downloading {asset.Name}...");
 
                 var zipPath = Path.Combine(_installPath, asset.Name);
@@ -169,24 +216,29 @@ namespace LlamaForge.Services
                         var oldPath = Path.Combine(_installPath, $"{variant.Type}_old_{DateTime.Now:yyyyMMdd_HHmmss}");
                         var renamed = false;
 
-                        // Try to rename the directory (much less likely to fail than deletion)
-                        for (int i = 0; i < 3; i++)
+                        // Try to rename the directory with exponential backoff
+                        // CUDA files especially may need more time for handles to be released
+                        const int maxAttempts = 5;
+                        for (int i = 0; i < maxAttempts; i++)
                         {
                             try
                             {
                                 Directory.Move(extractPath, oldPath);
                                 renamed = true;
+                                StatusChanged?.Invoke(this, "Old installation moved successfully.");
                                 break;
                             }
-                            catch (UnauthorizedAccessException) when (i < 2)
+                            catch (UnauthorizedAccessException) when (i < maxAttempts - 1)
                             {
-                                StatusChanged?.Invoke(this, $"Retrying to move old files (attempt {i + 2}/3)...");
-                                await Task.Delay(1000);
+                                var delay = (int)Math.Pow(2, i) * 1000; // Exponential backoff: 1s, 2s, 4s, 8s
+                                StatusChanged?.Invoke(this, $"Retrying to move old files (attempt {i + 2}/{maxAttempts})...");
+                                await Task.Delay(delay);
                             }
-                            catch (IOException) when (i < 2)
+                            catch (IOException) when (i < maxAttempts - 1)
                             {
-                                StatusChanged?.Invoke(this, $"Retrying to move old files (attempt {i + 2}/3)...");
-                                await Task.Delay(1000);
+                                var delay = (int)Math.Pow(2, i) * 1000; // Exponential backoff: 1s, 2s, 4s, 8s
+                                StatusChanged?.Invoke(this, $"Retrying to move old files (attempt {i + 2}/{maxAttempts})...");
+                                await Task.Delay(delay);
                             }
                         }
 
@@ -194,7 +246,7 @@ namespace LlamaForge.Services
                         {
                             // Clean up temp directory
                             Directory.Delete(tempExtractPath, true);
-                            throw new Exception($"Cannot move old installation at:\n{extractPath}\n\nThe files may be in use by another process. Please:\n1. Make sure the server is stopped\n2. Close any file explorers viewing this folder\n3. Check Task Manager for any running llama-server.exe processes");
+                            throw new Exception($"Cannot move old installation at:\n{extractPath}\n\nThe files appear to be locked. Possible solutions:\n1. Restart the application and try again\n2. Manually delete the folder: {extractPath}\n3. Restart your computer if the issue persists\n\nNote: CUDA files may remain locked by Windows even after processes terminate.");
                         }
 
                         // Try to delete the old directory in the background, but don't fail if it's locked

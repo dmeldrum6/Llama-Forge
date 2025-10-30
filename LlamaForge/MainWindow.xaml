@@ -4,13 +4,17 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LlamaForge.ViewModels"
+        xmlns:controls="clr-namespace:LlamaForge.Controls"
         mc:Ignorable="d"
         Title="Llama Forge - Local AI Server &amp; Chat" Height="800" Width="1200"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BackgroundPrimary}">
     <Window.DataContext>
-        <local:MainViewModel/> 
+        <local:MainViewModel/>
     </Window.DataContext>
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -180,14 +184,7 @@
                                                         </TextBlock.Style>
                                                     </TextBlock>
                                                 </StackPanel>
-                                                <TextBox Text="{Binding Content}" TextWrapping="Wrap" FontSize="14"
-                                                         Foreground="{DynamicResource TextPrimary}"
-                                                         Background="Transparent"
-                                                         BorderThickness="0"
-                                                         IsReadOnly="True"
-                                                         FontFamily="Consolas"
-                                                         Padding="0"
-                                                         Cursor="IBeam"/>
+                                                <controls:MessageContentControl ContentText="{Binding Content}"/>
                                                 <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}"
                                                           FontSize="11" Foreground="{DynamicResource TextTertiary}"
                                                           Margin="0,8,0,0" FontStyle="Italic"/>

@@ -180,8 +180,14 @@
                                                         </TextBlock.Style>
                                                     </TextBlock>
                                                 </StackPanel>
-                                                <TextBlock Text="{Binding Content}" TextWrapping="Wrap" FontSize="14"
-                                                          Foreground="{DynamicResource TextPrimary}" LineHeight="22"/>
+                                                <TextBox Text="{Binding Content}" TextWrapping="Wrap" FontSize="14"
+                                                         Foreground="{DynamicResource TextPrimary}"
+                                                         Background="Transparent"
+                                                         BorderThickness="0"
+                                                         IsReadOnly="True"
+                                                         FontFamily="Consolas"
+                                                         Padding="0"
+                                                         Cursor="IBeam"/>
                                                 <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}"
                                                           FontSize="11" Foreground="{DynamicResource TextTertiary}"
                                                           Margin="0,8,0,0" FontStyle="Italic"/>
@@ -245,13 +251,14 @@
                         <TextBlock Text="Server" FontSize="14"/>
                     </StackPanel>
                 </TabItem.Header>
-                <Grid Margin="0,16,0,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,16,0,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
                     <!-- Variant Selection -->
                     <GroupBox Grid.Row="0" Margin="0,0,0,16">
@@ -272,6 +279,7 @@
                                       SelectedItem="{Binding SelectedVariant}"
                                       DisplayMemberPath="DisplayName"
                                       Height="40" Margin="0,0,0,12"
+                                      Foreground="{DynamicResource TextPrimary}"
                                       IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
 
                             <TextBlock Grid.Row="1" Text="{Binding SelectedVariant.Description}"
@@ -380,7 +388,7 @@
                         </GroupBox.Header>
                         <ScrollViewer VerticalScrollBarVisibility="Auto"
                                      HorizontalScrollBarVisibility="Auto"
-                                     MinHeight="200"
+                                     Height="400"
                                      Padding="0,0,0,16">
                             <ItemsControl ItemsSource="{Binding ServerLogs}">
                                 <ItemsControl.ItemTemplate>
@@ -400,7 +408,8 @@
                             </ItemsControl>
                         </ScrollViewer>
                     </GroupBox>
-                </Grid>
+                    </Grid>
+                </ScrollViewer>
             </TabItem>
 
             <!-- Download Tab -->

@@ -5,6 +5,7 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <helpers:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <!-- THEME COLORS - Dark Theme (Default) -->
         <SolidColorBrush x:Key="BackgroundPrimary" Color="#0A0E1A"/>

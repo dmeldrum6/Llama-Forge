@@ -121,10 +121,23 @@ namespace LlamaForge.Services
                 // Extract the zip file
                 if (Directory.Exists(extractPath))
                 {
-                    Directory.Delete(extractPath, true);
+                    try
+                    {
+                        StatusChanged?.Invoke(this, "Removing old installation...");
+                        Directory.Delete(extractPath, true);
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        throw new Exception($"Cannot remove old installation. The files may be in use by another process. Please close any running servers and try again.");
+                    }
+                    catch (IOException ex)
+                    {
+                        throw new Exception($"Cannot remove old installation: {ex.Message}. The files may be in use.");
+                    }
                 }
                 Directory.CreateDirectory(extractPath);
 
+                StatusChanged?.Invoke(this, "Extracting files...");
                 ZipFile.ExtractToDirectory(zipPath, extractPath);
 
                 // Clean up zip file

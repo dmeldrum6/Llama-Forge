@@ -536,6 +536,19 @@ namespace LlamaForge.ViewModels
                 return;
             }
 
+            // Check if server is running with one of the selected variants
+            if (IsServerRunning && SelectedVariant != null)
+            {
+                var runningVariant = selectedVariants.FirstOrDefault(v => v.Variant.Type == SelectedVariant.Type);
+                if (runningVariant != null)
+                {
+                    StatusMessage = "Cannot download variant while server is running with it.";
+                    MessageBox.Show($"The server is currently running with {runningVariant.Variant.DisplayName}.\n\nPlease stop the server before downloading this variant.",
+                        "Server Running", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+            }
+
             IsDownloading = true;
             IsBusy = true;
 

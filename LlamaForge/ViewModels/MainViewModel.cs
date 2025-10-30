@@ -24,6 +24,7 @@ namespace LlamaForge.ViewModels
         public ObservableCollection<ChatMessage> ChatMessages { get; } = new();
         public ObservableCollection<string> ServerLogs { get; } = new();
         public ObservableCollection<LlamaVariant> AvailableVariants { get; } = new();
+        public ObservableCollection<DownloadableVariant> DownloadableVariants { get; } = new();
 
         // Properties
         private string _userInput = string.Empty;
@@ -59,6 +60,13 @@ namespace LlamaForge.ViewModels
         {
             get => _downloadProgress;
             set { _downloadProgress = value; OnPropertyChanged(); }
+        }
+
+        private bool _isDownloading;
+        public bool IsDownloading
+        {
+            get => _isDownloading;
+            set { _isDownloading = value; OnPropertyChanged(); }
         }
 
         private LlamaVariant? _selectedVariant;
@@ -183,6 +191,22 @@ namespace LlamaForge.ViewModels
 
                 Console.WriteLine($"Total variants: {AvailableVariants.Count}");
                 System.Diagnostics.Debug.WriteLine($"Total variants: {AvailableVariants.Count}");
+
+                // Initialize downloadable variants
+                foreach (var variant in AvailableVariants)
+                {
+                    var downloadableVariant = new DownloadableVariant
+                    {
+                        Variant = variant,
+                        IsSelected = false,
+                        InstalledVersion = _githubService.GetInstalledVersion(variant) ?? "Not installed",
+                        LatestVersion = "Checking...",
+                        DownloadProgress = 0,
+                        IsDownloading = false,
+                        StatusMessage = ""
+                    };
+                    DownloadableVariants.Add(downloadableVariant);
+                }
 
                 // Commands
                 StartServerCommand = new RelayCommand(async _ => await StartServerAsync(), _ => CanStartServer);
@@ -469,7 +493,28 @@ namespace LlamaForge.ViewModels
             if (release != null)
             {
                 StatusMessage = $"Latest version: {release.TagName} (Published: {release.PublishedAt:yyyy-MM-dd})";
-                MessageBox.Show($"Latest version: {release.TagName}\n\nPublished: {release.PublishedAt:yyyy-MM-dd}\n\nSelect a variant and click Download to install.", "Update Available", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // Update all downloadable variants with latest version and installed version
+                foreach (var downloadableVariant in DownloadableVariants)
+                {
+                    downloadableVariant.LatestVersion = release.TagName;
+                    downloadableVariant.InstalledVersion = _githubService.GetInstalledVersion(downloadableVariant.Variant) ?? "Not installed";
+
+                    // Check if assets are available for this variant
+                    var assets = await _githubService.GetAvailableAssetsForVariantAsync(downloadableVariant.Variant);
+                    if (assets.Count == 0)
+                    {
+                        downloadableVariant.StatusMessage = "Not available for this platform";
+                    }
+                    else
+                    {
+                        downloadableVariant.StatusMessage = downloadableVariant.InstalledVersion == release.TagName
+                            ? "Up to date"
+                            : "Update available";
+                    }
+                }
+
+                MessageBox.Show($"Latest version: {release.TagName}\n\nPublished: {release.PublishedAt:yyyy-MM-dd}\n\nSelect variants and click Download to install.", "Update Check Complete", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
@@ -481,44 +526,97 @@ namespace LlamaForge.ViewModels
 
         private async Task DownloadSelectedVariantAsync()
         {
-            if (SelectedVariant == null)
+            // Get all selected variants
+            var selectedVariants = DownloadableVariants.Where(v => v.IsSelected).ToList();
+
+            if (selectedVariants.Count == 0)
             {
-                StatusMessage = "Please select a variant first.";
+                StatusMessage = "Please select at least one variant to download.";
+                MessageBox.Show("Please select at least one variant to download.", "No Selection", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
+            IsDownloading = true;
             IsBusy = true;
-            DownloadProgress = 0;
-            StatusMessage = $"Finding {SelectedVariant.DisplayName} download...";
 
-            var assets = await _githubService.GetAvailableAssetsForVariantAsync(SelectedVariant);
+            var successCount = 0;
+            var failCount = 0;
 
-            if (assets.Count == 0)
+            foreach (var downloadableVariant in selectedVariants)
             {
-                StatusMessage = $"No download found for {SelectedVariant.DisplayName}";
-                MessageBox.Show($"Could not find a download for {SelectedVariant.DisplayName}.\n\nThis variant may not be available in the latest release.", "Download Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
-                IsBusy = false;
-                return;
+                try
+                {
+                    downloadableVariant.IsDownloading = true;
+                    downloadableVariant.DownloadProgress = 0;
+                    downloadableVariant.StatusMessage = "Finding download...";
+                    StatusMessage = $"Downloading {downloadableVariant.Variant.DisplayName}...";
+
+                    var assets = await _githubService.GetAvailableAssetsForVariantAsync(downloadableVariant.Variant);
+
+                    if (assets.Count == 0)
+                    {
+                        downloadableVariant.StatusMessage = "Download not found";
+                        failCount++;
+                        continue;
+                    }
+
+                    var asset = assets.First();
+                    downloadableVariant.StatusMessage = $"Downloading {asset.Name}...";
+
+                    // Subscribe to progress updates for this specific download
+                    EventHandler<DownloadProgressEventArgs> progressHandler = (s, e) =>
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            downloadableVariant.DownloadProgress = e.ProgressPercentage;
+                        });
+                    };
+
+                    _githubService.DownloadProgressChanged += progressHandler;
+
+                    var success = await _githubService.DownloadAndInstallAsync(asset, downloadableVariant.Variant);
+
+                    _githubService.DownloadProgressChanged -= progressHandler;
+
+                    if (success)
+                    {
+                        downloadableVariant.StatusMessage = "Installed successfully";
+                        downloadableVariant.InstalledVersion = _githubService.GetInstalledVersion(downloadableVariant.Variant) ?? "Not installed";
+                        downloadableVariant.DownloadProgress = 100;
+                        successCount++;
+
+                        // Update server settings if this is the selected variant
+                        if (SelectedVariant?.Type == downloadableVariant.Variant.Type)
+                        {
+                            OnPropertyChanged(nameof(InstalledVersion));
+                        }
+                    }
+                    else
+                    {
+                        downloadableVariant.StatusMessage = "Download failed";
+                        failCount++;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    downloadableVariant.StatusMessage = $"Error: {ex.Message}";
+                    AddServerLog($"Error downloading {downloadableVariant.Variant.DisplayName}: {ex.Message}");
+                    failCount++;
+                }
+                finally
+                {
+                    downloadableVariant.IsDownloading = false;
+                }
             }
 
-            var asset = assets.First();
-            StatusMessage = $"Downloading {asset.Name}...";
-
-            var success = await _githubService.DownloadAndInstallAsync(asset, SelectedVariant);
-
-            if (success)
-            {
-                StatusMessage = $"{SelectedVariant.DisplayName} installed successfully!";
-                OnPropertyChanged(nameof(InstalledVersion));
-                MessageBox.Show($"{SelectedVariant.DisplayName} has been installed successfully!", "Download Complete", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            else
-            {
-                StatusMessage = "Download failed. Check logs.";
-            }
-
+            IsDownloading = false;
             IsBusy = false;
-            DownloadProgress = 0;
+
+            // Show summary
+            var message = $"Download complete!\n\nSuccessful: {successCount}\nFailed: {failCount}";
+            StatusMessage = $"Downloads complete: {successCount} succeeded, {failCount} failed";
+            MessageBox.Show(message, "Download Complete", MessageBoxButton.OK,
+                failCount > 0 ? MessageBoxImage.Warning : MessageBoxImage.Information);
         }
 
         private void UpdateServerExecutablePath()

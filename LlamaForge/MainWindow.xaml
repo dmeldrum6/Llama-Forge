@@ -423,29 +423,11 @@
                 <Grid Margin="0,16,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Version Info -->
-                    <GroupBox Grid.Row="0" Margin="0,0,0,16">
-                        <GroupBox.Header>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE895;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
-                                          Foreground="{DynamicResource AccentCyan}"/>
-                                <TextBlock Text="Version Information" FontSize="16" FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </GroupBox.Header>
-                        <StackPanel>
-                            <TextBlock FontSize="14" Foreground="{DynamicResource TextPrimary}">
-                                <Run Text="Installed Version: " FontWeight="SemiBold"/>
-                                <Run Text="{Binding InstalledVersion, Mode=OneWay}" Foreground="{DynamicResource AccentPrimary}"/>
-                            </TextBlock>
-                        </StackPanel>
-                    </GroupBox>
-
                     <!-- Download Controls -->
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,16">
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
                         <Button Width="180" Height="48" Margin="0,0,16,0"
                                 Command="{Binding CheckUpdatesCommand}"
                                 Style="{StaticResource AccentButton}"
@@ -466,21 +448,96 @@
                         </Button>
                     </StackPanel>
 
-                    <!-- Download Progress -->
-                    <GroupBox Grid.Row="2">
+                    <!-- Available Variants List -->
+                    <GroupBox Grid.Row="1">
                         <GroupBox.Header>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE9F5;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
-                                          Foreground="{StaticResource SuccessColor}"/>
-                                <TextBlock Text="Download Progress" FontSize="16" FontWeight="SemiBold"/>
+                                <TextBlock Text="&#xE8FD;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
+                                          Foreground="{DynamicResource AccentCyan}"/>
+                                <TextBlock Text="Available Variants" FontSize="16" FontWeight="SemiBold"/>
                             </StackPanel>
                         </GroupBox.Header>
-                        <StackPanel>
-                            <ProgressBar Height="12" Value="{Binding DownloadProgress}" Maximum="100" Margin="0,0,0,16"/>
-                            <TextBlock Text="{Binding DownloadProgress, StringFormat='{}Progress: {0}%'}"
-                                       HorizontalAlignment="Center" FontWeight="SemiBold" FontSize="16"
-                                       Foreground="{DynamicResource TextPrimary}"/>
-                        </StackPanel>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding DownloadableVariants}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{DynamicResource BackgroundCard}"
+                                                BorderBrush="{DynamicResource BorderPrimary}"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Padding="16"
+                                                Margin="0,0,0,12">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- Checkbox and Variant Name -->
+                                                <CheckBox Grid.Row="0" Grid.Column="0"
+                                                          IsChecked="{Binding IsSelected}"
+                                                          VerticalAlignment="Center"
+                                                          Margin="0,0,12,0"/>
+                                                <StackPanel Grid.Row="0" Grid.Column="1">
+                                                    <TextBlock Text="{Binding Variant.DisplayName}"
+                                                               FontSize="16"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource TextPrimary}"/>
+                                                    <TextBlock Text="{Binding Variant.Description}"
+                                                               FontSize="12"
+                                                               Foreground="{DynamicResource TextSecondary}"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,4,0,0"/>
+                                                </StackPanel>
+
+                                                <!-- Version Info -->
+                                                <Grid Grid.Row="1" Grid.Column="1" Margin="0,8,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                                        <TextBlock Text="Installed: " FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                                                        <TextBlock Text="{Binding InstalledVersion}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                                    </StackPanel>
+
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0">
+                                                        <TextBlock Text="Latest: " FontSize="12" Foreground="{DynamicResource TextSecondary}"/>
+                                                        <TextBlock Text="{Binding LatestVersion}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentPrimary}"/>
+                                                    </StackPanel>
+
+                                                    <TextBlock Grid.Column="2"
+                                                               Text="{Binding StatusMessage}"
+                                                               FontSize="12"
+                                                               FontStyle="Italic"
+                                                               Foreground="{DynamicResource TextTertiary}"/>
+                                                </Grid>
+
+                                                <!-- Progress Bar -->
+                                                <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,8,0,0"
+                                                            Visibility="{Binding IsDownloading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                    <ProgressBar Height="8"
+                                                                 Value="{Binding DownloadProgress}"
+                                                                 Maximum="100"
+                                                                 Margin="0,0,0,4"/>
+                                                    <TextBlock Text="{Binding DownloadProgress, StringFormat='{}Downloading: {0}%'}"
+                                                               FontSize="11"
+                                                               Foreground="{DynamicResource AccentPrimary}"
+                                                               HorizontalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </GroupBox>
                 </Grid>
             </TabItem>

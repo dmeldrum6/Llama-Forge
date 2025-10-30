@@ -118,27 +118,63 @@ namespace LlamaForge.Services
 
                 StatusChanged?.Invoke(this, $"Extracting {asset.Name}...");
 
-                // Extract the zip file
-                if (Directory.Exists(extractPath))
+                // Extract to a temporary directory first for safety
+                var tempExtractPath = Path.Combine(_installPath, $"{variant.Type}_temp_{Guid.NewGuid():N}");
+                Directory.CreateDirectory(tempExtractPath);
+
+                try
                 {
-                    try
+                    StatusChanged?.Invoke(this, "Extracting files...");
+                    ZipFile.ExtractToDirectory(zipPath, tempExtractPath);
+
+                    // Now try to replace the old installation
+                    if (Directory.Exists(extractPath))
                     {
                         StatusChanged?.Invoke(this, "Removing old installation...");
-                        Directory.Delete(extractPath, true);
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        throw new Exception($"Cannot remove old installation. The files may be in use by another process. Please close any running servers and try again.");
-                    }
-                    catch (IOException ex)
-                    {
-                        throw new Exception($"Cannot remove old installation: {ex.Message}. The files may be in use.");
-                    }
-                }
-                Directory.CreateDirectory(extractPath);
 
-                StatusChanged?.Invoke(this, "Extracting files...");
-                ZipFile.ExtractToDirectory(zipPath, extractPath);
+                        // Try to delete with retries in case files are being released
+                        var deleted = false;
+                        for (int i = 0; i < 3; i++)
+                        {
+                            try
+                            {
+                                Directory.Delete(extractPath, true);
+                                deleted = true;
+                                break;
+                            }
+                            catch (UnauthorizedAccessException) when (i < 2)
+                            {
+                                StatusChanged?.Invoke(this, $"Retrying to remove old files (attempt {i + 2}/3)...");
+                                await Task.Delay(1000);
+                            }
+                            catch (IOException) when (i < 2)
+                            {
+                                StatusChanged?.Invoke(this, $"Retrying to remove old files (attempt {i + 2}/3)...");
+                                await Task.Delay(1000);
+                            }
+                        }
+
+                        if (!deleted)
+                        {
+                            // Clean up temp directory
+                            Directory.Delete(tempExtractPath, true);
+                            throw new Exception($"Cannot remove old installation at:\n{extractPath}\n\nThe files may be in use by another process. Please:\n1. Make sure the server is stopped\n2. Close any file explorers viewing this folder\n3. Check Task Manager for any running llama-server.exe processes");
+                        }
+                    }
+
+                    // Move the temp directory to the final location
+                    StatusChanged?.Invoke(this, "Finalizing installation...");
+                    Directory.Move(tempExtractPath, extractPath);
+                }
+                catch
+                {
+                    // Clean up temp directory if something went wrong
+                    if (Directory.Exists(tempExtractPath))
+                    {
+                        try { Directory.Delete(tempExtractPath, true); } catch { }
+                    }
+                    throw;
+                }
 
                 // Clean up zip file
                 File.Delete(zipPath);

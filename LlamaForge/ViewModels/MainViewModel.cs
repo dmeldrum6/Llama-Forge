@@ -208,12 +208,14 @@ namespace LlamaForge.ViewModels
                     DownloadableVariants.Add(downloadableVariant);
                 }
 
-                // Automatically check for updates in the background after UI loads
+                // If you want to automatically check for updates in the background after UI loads
+                /*
                 Task.Run(async () =>
                 {
                     await Task.Delay(1000); // Wait a bit for UI to fully load
                     await CheckForUpdatesAsync();
                 });
+                */
 
                 // Commands
                 StartServerCommand = new RelayCommand(async _ => await StartServerAsync(), _ => CanStartServer);

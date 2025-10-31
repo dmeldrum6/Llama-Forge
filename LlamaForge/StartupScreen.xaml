@@ -1,0 +1,177 @@
+<Window x:Class="LlamaForge.StartupScreen"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Welcome to Llama Forge"
+        Width="700" Height="600"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="{DynamicResource BackgroundPrimary}">
+    <Grid>
+        <!-- Main Content -->
+        <Grid Margin="40">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,30">
+                <TextBlock Text="Welcome to Llama Forge"
+                          FontSize="32"
+                          FontWeight="Bold"
+                          Foreground="{DynamicResource TextPrimary}"
+                          HorizontalAlignment="Center"/>
+                <TextBlock Text="Your local LLM companion"
+                          FontSize="16"
+                          Foreground="{DynamicResource TextSecondary}"
+                          HorizontalAlignment="Center"
+                          Margin="0,8,0,0"/>
+            </StackPanel>
+
+            <!-- Getting Started Steps -->
+            <Border Grid.Row="1"
+                   Background="{DynamicResource BackgroundCard}"
+                   BorderBrush="{DynamicResource BorderPrimary}"
+                   BorderThickness="1"
+                   CornerRadius="12"
+                   Padding="30">
+                <Border.Effect>
+                    <DropShadowEffect ShadowDepth="0" BlurRadius="20" Color="#000000" Opacity="0.3"/>
+                </Border.Effect>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="Getting Started"
+                                  FontSize="20"
+                                  FontWeight="SemiBold"
+                                  Foreground="{DynamicResource TextPrimary}"
+                                  Margin="0,0,0,20"/>
+
+                        <!-- Step 1 -->
+                        <Border Background="{DynamicResource BackgroundSecondary}"
+                               BorderBrush="{DynamicResource AccentPrimary}"
+                               BorderThickness="2,0,0,0"
+                               Padding="20,16"
+                               Margin="0,0,0,16"
+                               CornerRadius="4">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <Ellipse Width="28" Height="28"
+                                            Fill="{DynamicResource AccentPrimary}"
+                                            Margin="0,0,12,0"/>
+                                    <TextBlock Text="Step 1: Download a Model"
+                                              FontSize="16"
+                                              FontWeight="SemiBold"
+                                              Foreground="{DynamicResource TextPrimary}"
+                                              VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock TextWrapping="Wrap"
+                                          Foreground="{DynamicResource TextSecondary}"
+                                          Margin="40,0,0,0">
+                                    Go to the <Bold>Download/Update</Bold> tab and select a Llama model variant from HuggingFace.
+                                    Choose a model size that fits your hardware capabilities and click Download.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Step 2 -->
+                        <Border Background="{DynamicResource BackgroundSecondary}"
+                               BorderBrush="{DynamicResource AccentSecondary}"
+                               BorderThickness="2,0,0,0"
+                               Padding="20,16"
+                               Margin="0,0,0,16"
+                               CornerRadius="4">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <Ellipse Width="28" Height="28"
+                                            Fill="{DynamicResource AccentSecondary}"
+                                            Margin="0,0,12,0"/>
+                                    <TextBlock Text="Step 2: Configure the Server"
+                                              FontSize="16"
+                                              FontWeight="SemiBold"
+                                              Foreground="{DynamicResource TextPrimary}"
+                                              VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock TextWrapping="Wrap"
+                                          Foreground="{DynamicResource TextSecondary}"
+                                          Margin="40,0,0,0">
+                                    Navigate to the <Bold>Server</Bold> tab and configure your settings.
+                                    Set the model path (if not auto-filled), adjust context size, threads, and GPU layers based on your system.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Step 3 -->
+                        <Border Background="{DynamicResource BackgroundSecondary}"
+                               BorderBrush="{DynamicResource AccentCyan}"
+                               BorderThickness="2,0,0,0"
+                               Padding="20,16"
+                               Margin="0,0,0,16"
+                               CornerRadius="4">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <Ellipse Width="28" Height="28"
+                                            Fill="{DynamicResource AccentCyan}"
+                                            Margin="0,0,12,0"/>
+                                    <TextBlock Text="Step 3: Start the Server"
+                                              FontSize="16"
+                                              FontWeight="SemiBold"
+                                              Foreground="{DynamicResource TextPrimary}"
+                                              VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock TextWrapping="Wrap"
+                                          Foreground="{DynamicResource TextSecondary}"
+                                          Margin="40,0,0,0">
+                                    Click the <Bold>Start Server</Bold> button to launch the Llama server.
+                                    Monitor the logs to ensure the server starts successfully.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Step 4 -->
+                        <Border Background="{DynamicResource BackgroundSecondary}"
+                               BorderBrush="{DynamicResource AccentPurple}"
+                               BorderThickness="2,0,0,0"
+                               Padding="20,16"
+                               CornerRadius="4">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <Ellipse Width="28" Height="28"
+                                            Fill="{DynamicResource AccentPurple}"
+                                            Margin="0,0,12,0"/>
+                                    <TextBlock Text="Step 4: Start Chatting"
+                                              FontSize="16"
+                                              FontWeight="SemiBold"
+                                              Foreground="{DynamicResource TextPrimary}"
+                                              VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock TextWrapping="Wrap"
+                                          Foreground="{DynamicResource TextSecondary}"
+                                          Margin="40,0,0,0">
+                                    Switch to the <Bold>Chat</Bold> tab and start interacting with your local LLM.
+                                    Type your messages and enjoy private, offline AI conversations!
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Footer with checkbox and button -->
+            <StackPanel Grid.Row="2" Margin="0,20,0,0">
+                <CheckBox x:Name="DontShowAgainCheckBox"
+                         Content="Don't show this screen again"
+                         Foreground="{DynamicResource TextSecondary}"
+                         HorizontalAlignment="Center"
+                         Margin="0,0,0,16"/>
+                <Button x:Name="GetStartedButton"
+                       Content="Get Started"
+                       Style="{StaticResource AccentButton}"
+                       Width="200"
+                       Height="40"
+                       FontSize="16"
+                       Click="GetStartedButton_Click"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

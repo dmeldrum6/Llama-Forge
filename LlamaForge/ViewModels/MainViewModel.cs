@@ -125,12 +125,91 @@ namespace LlamaForge.ViewModels
             set { _gpuLayers = value; OnPropertyChanged(); Config.GpuLayers = value; SaveSettings(); }
         }
 
+        private int _batchSize = 512;
+        public int BatchSize
+        {
+            get => _batchSize;
+            set { _batchSize = value; OnPropertyChanged(); Config.BatchSize = value; SaveSettings(); }
+        }
+
+        private int _batchThreads = 4;
+        public int BatchThreads
+        {
+            get => _batchThreads;
+            set { _batchThreads = value; OnPropertyChanged(); Config.BatchThreads = value; SaveSettings(); }
+        }
+
+        private int _parallelSlots = 1;
+        public int ParallelSlots
+        {
+            get => _parallelSlots;
+            set { _parallelSlots = value; OnPropertyChanged(); Config.ParallelSlots = value; SaveSettings(); }
+        }
+
+        private bool _continuousBatching = false;
+        public bool ContinuousBatching
+        {
+            get => _continuousBatching;
+            set { _continuousBatching = value; OnPropertyChanged(); Config.ContinuousBatching = value; SaveSettings(); }
+        }
+
+        private bool _memoryLock = false;
+        public bool MemoryLock
+        {
+            get => _memoryLock;
+            set { _memoryLock = value; OnPropertyChanged(); Config.MemoryLock = value; SaveSettings(); }
+        }
+
+        private bool _disableMemoryMapping = false;
+        public bool DisableMemoryMapping
+        {
+            get => _disableMemoryMapping;
+            set { _disableMemoryMapping = value; OnPropertyChanged(); Config.DisableMemoryMapping = value; SaveSettings(); }
+        }
+
+        private string _modelAlias = string.Empty;
+        public string ModelAlias
+        {
+            get => _modelAlias;
+            set { _modelAlias = value; OnPropertyChanged(); Config.ModelAlias = value; SaveSettings(); }
+        }
+
+        private string _apiKey = string.Empty;
+        public string ApiKey
+        {
+            get => _apiKey;
+            set { _apiKey = value; OnPropertyChanged(); Config.ApiKey = value; SaveSettings(); }
+        }
+
+        private int _timeout = 600;
+        public int Timeout
+        {
+            get => _timeout;
+            set { _timeout = value; OnPropertyChanged(); Config.Timeout = value; SaveSettings(); }
+        }
+
+        private bool _enableEmbeddings = false;
+        public bool EnableEmbeddings
+        {
+            get => _enableEmbeddings;
+            set { _enableEmbeddings = value; OnPropertyChanged(); Config.EnableEmbeddings = value; SaveSettings(); }
+        }
+
         private string _additionalArgs = string.Empty;
         public string AdditionalArgs
         {
             get => _additionalArgs;
             set { _additionalArgs = value; OnPropertyChanged(); Config.AdditionalArgs = value; SaveSettings(); }
         }
+
+        private ModelInfo? _currentModelInfo;
+        public ModelInfo? CurrentModelInfo
+        {
+            get => _currentModelInfo;
+            set { _currentModelInfo = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasModelInfo)); }
+        }
+
+        public bool HasModelInfo => CurrentModelInfo != null;
 
         private bool _isDarkTheme = true;
         public bool IsDarkTheme
@@ -156,6 +235,7 @@ namespace LlamaForge.ViewModels
         public ICommand DownloadVariantCommand { get; }
         public ICommand ClearChatCommand { get; }
         public ICommand ToggleThemeCommand { get; }
+        public ICommand AutoDetectThreadsCommand { get; }
 
         public MainViewModel()
         {
@@ -226,6 +306,7 @@ namespace LlamaForge.ViewModels
                 DownloadVariantCommand = new RelayCommand(async _ => await DownloadSelectedVariantAsync());
                 ClearChatCommand = new RelayCommand(_ => ChatMessages.Clear());
                 ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
+                AutoDetectThreadsCommand = new RelayCommand(_ => AutoDetectThreads());
 
                 Console.WriteLine("Commands initialized");
                 System.Diagnostics.Debug.WriteLine("Commands initialized");
@@ -336,6 +417,22 @@ namespace LlamaForge.ViewModels
                             AddServerLog("Checking model info...");
                             var modelInfo = await _chatClient.GetModelInfoAsync();
                             AddServerLog($"Model info: {modelInfo}");
+
+                            // Fetch detailed model information
+                            AddServerLog("Fetching detailed model metadata...");
+                            CurrentModelInfo = await _chatClient.GetDetailedModelInfoAsync();
+                            if (CurrentModelInfo != null)
+                            {
+                                AddServerLog($"Model loaded: {CurrentModelInfo.Name ?? CurrentModelInfo.Id}");
+                                if (CurrentModelInfo.Meta != null)
+                                {
+                                    AddServerLog($"  Architecture: {CurrentModelInfo.Architecture}");
+                                    AddServerLog($"  Parameters: {FormatParameterCount(CurrentModelInfo.Meta.ParameterCount)}");
+                                    AddServerLog($"  Vocabulary: {CurrentModelInfo.Meta.VocabSize:N0} tokens");
+                                    AddServerLog($"  Training Context: {CurrentModelInfo.Meta.TrainingContextLength:N0} tokens");
+                                    AddServerLog($"  Embedding Size: {CurrentModelInfo.Meta.EmbeddingDimensions}");
+                                }
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -386,6 +483,7 @@ namespace LlamaForge.ViewModels
         {
             _serverManager?.StopServer();
             _chatClient = null;
+            CurrentModelInfo = null;
             IsServerRunning = false;
             StatusMessage = "Server stopped";
         }
@@ -703,6 +801,26 @@ namespace LlamaForge.ViewModels
             }
         }
 
+        private void AutoDetectThreads()
+        {
+            var processorCount = Environment.ProcessorCount;
+            Threads = processorCount;
+            BatchThreads = processorCount;
+            AddServerLog($"Auto-detected {processorCount} CPU threads");
+            StatusMessage = $"Threads set to {processorCount} (CPU cores)";
+        }
+
+        private string FormatParameterCount(long paramCount)
+        {
+            if (paramCount >= 1_000_000_000)
+                return $"{paramCount / 1_000_000_000.0:F1}B";
+            if (paramCount >= 1_000_000)
+                return $"{paramCount / 1_000_000.0:F1}M";
+            if (paramCount >= 1_000)
+                return $"{paramCount / 1_000.0:F1}K";
+            return paramCount.ToString();
+        }
+
         private void LoadSettings()
         {
             try
@@ -718,6 +836,16 @@ namespace LlamaForge.ViewModels
                     _contextSize = settings.ServerConfig.ContextSize;
                     _threads = settings.ServerConfig.Threads;
                     _gpuLayers = settings.ServerConfig.GpuLayers;
+                    _batchSize = settings.ServerConfig.BatchSize;
+                    _batchThreads = settings.ServerConfig.BatchThreads;
+                    _parallelSlots = settings.ServerConfig.ParallelSlots;
+                    _continuousBatching = settings.ServerConfig.ContinuousBatching;
+                    _memoryLock = settings.ServerConfig.MemoryLock;
+                    _disableMemoryMapping = settings.ServerConfig.DisableMemoryMapping;
+                    _modelAlias = settings.ServerConfig.ModelAlias;
+                    _apiKey = settings.ServerConfig.ApiKey;
+                    _timeout = settings.ServerConfig.Timeout;
+                    _enableEmbeddings = settings.ServerConfig.EnableEmbeddings;
                     _additionalArgs = settings.ServerConfig.AdditionalArgs;
 
                     // Update Config object
@@ -727,6 +855,16 @@ namespace LlamaForge.ViewModels
                     Config.ContextSize = _contextSize;
                     Config.Threads = _threads;
                     Config.GpuLayers = _gpuLayers;
+                    Config.BatchSize = _batchSize;
+                    Config.BatchThreads = _batchThreads;
+                    Config.ParallelSlots = _parallelSlots;
+                    Config.ContinuousBatching = _continuousBatching;
+                    Config.MemoryLock = _memoryLock;
+                    Config.DisableMemoryMapping = _disableMemoryMapping;
+                    Config.ModelAlias = _modelAlias;
+                    Config.ApiKey = _apiKey;
+                    Config.Timeout = _timeout;
+                    Config.EnableEmbeddings = _enableEmbeddings;
                     Config.AdditionalArgs = _additionalArgs;
 
                     // Notify UI of changes
@@ -736,6 +874,16 @@ namespace LlamaForge.ViewModels
                     OnPropertyChanged(nameof(ContextSize));
                     OnPropertyChanged(nameof(Threads));
                     OnPropertyChanged(nameof(GpuLayers));
+                    OnPropertyChanged(nameof(BatchSize));
+                    OnPropertyChanged(nameof(BatchThreads));
+                    OnPropertyChanged(nameof(ParallelSlots));
+                    OnPropertyChanged(nameof(ContinuousBatching));
+                    OnPropertyChanged(nameof(MemoryLock));
+                    OnPropertyChanged(nameof(DisableMemoryMapping));
+                    OnPropertyChanged(nameof(ModelAlias));
+                    OnPropertyChanged(nameof(ApiKey));
+                    OnPropertyChanged(nameof(Timeout));
+                    OnPropertyChanged(nameof(EnableEmbeddings));
                     OnPropertyChanged(nameof(AdditionalArgs));
                 }
 
@@ -773,6 +921,16 @@ namespace LlamaForge.ViewModels
                         ContextSize = _contextSize,
                         Threads = _threads,
                         GpuLayers = _gpuLayers,
+                        BatchSize = _batchSize,
+                        BatchThreads = _batchThreads,
+                        ParallelSlots = _parallelSlots,
+                        ContinuousBatching = _continuousBatching,
+                        MemoryLock = _memoryLock,
+                        DisableMemoryMapping = _disableMemoryMapping,
+                        ModelAlias = _modelAlias,
+                        ApiKey = _apiKey,
+                        Timeout = _timeout,
+                        EnableEmbeddings = _enableEmbeddings,
                         AdditionalArgs = _additionalArgs
                     },
                     SelectedVariantType = _selectedVariant?.Type

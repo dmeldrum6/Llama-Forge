@@ -59,6 +59,125 @@ namespace LlamaForge.Services
             }
         }
 
+        public async Task<ModelInfo?> GetDetailedModelInfoAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_baseUrl}/v1/models");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var modelsResponse = JsonConvert.DeserializeObject<ModelsResponse>(content);
+
+                    if (modelsResponse?.Data != null && modelsResponse.Data.Count > 0)
+                    {
+                        var modelData = modelsResponse.Data[0];
+                        var modelInfo = new ModelInfo
+                        {
+                            Id = modelData.Id ?? string.Empty,
+                            Object = modelData.Object ?? string.Empty,
+                            Created = modelData.Created,
+                            OwnedBy = modelData.OwnedBy ?? string.Empty
+                        };
+
+                        // Parse metadata if available
+                        if (modelData.Meta != null)
+                        {
+                            modelInfo.Meta = new ModelMetadata
+                            {
+                                VocabType = modelData.Meta.VocabType ?? 0,
+                                VocabSize = modelData.Meta.NVocab ?? 0,
+                                TrainingContextLength = modelData.Meta.NCtxTrain ?? 0,
+                                EmbeddingDimensions = modelData.Meta.NEmbd ?? 0,
+                                ParameterCount = modelData.Meta.NParams ?? 0,
+                                ModelSize = modelData.Meta.Size ?? 0
+                            };
+                        }
+
+                        // Parse general metadata from Meta dictionary if available
+                        if (modelData.Meta != null)
+                        {
+                            var metaDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(
+                                JsonConvert.SerializeObject(modelData.Meta));
+
+                            if (metaDict != null)
+                            {
+                                if (metaDict.ContainsKey("general.architecture"))
+                                    modelInfo.Architecture = metaDict["general.architecture"]?.ToString();
+                                if (metaDict.ContainsKey("general.name"))
+                                    modelInfo.Name = metaDict["general.name"]?.ToString();
+                                if (metaDict.ContainsKey("general.version"))
+                                    modelInfo.Version = metaDict["general.version"]?.ToString();
+                                if (metaDict.ContainsKey("general.finetune"))
+                                    modelInfo.Finetune = metaDict["general.finetune"]?.ToString();
+                                if (metaDict.ContainsKey("general.license"))
+                                    modelInfo.License = metaDict["general.license"]?.ToString();
+                                if (metaDict.ContainsKey("general.size_label"))
+                                    modelInfo.SizeLabel = metaDict["general.size_label"]?.ToString();
+                            }
+                        }
+
+                        return modelInfo;
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                ErrorOccurred?.Invoke(this, $"Error getting detailed model info: {ex.Message}");
+                return null;
+            }
+        }
+
+        // Helper classes for deserializing /v1/models response
+        private class ModelsResponse
+        {
+            [JsonProperty("object")]
+            public string? Object { get; set; }
+
+            [JsonProperty("data")]
+            public List<ModelData>? Data { get; set; }
+        }
+
+        private class ModelData
+        {
+            [JsonProperty("id")]
+            public string? Id { get; set; }
+
+            [JsonProperty("object")]
+            public string? Object { get; set; }
+
+            [JsonProperty("created")]
+            public long Created { get; set; }
+
+            [JsonProperty("owned_by")]
+            public string? OwnedBy { get; set; }
+
+            [JsonProperty("meta")]
+            public ModelMeta? Meta { get; set; }
+        }
+
+        private class ModelMeta
+        {
+            [JsonProperty("vocab_type")]
+            public int? VocabType { get; set; }
+
+            [JsonProperty("n_vocab")]
+            public int? NVocab { get; set; }
+
+            [JsonProperty("n_ctx_train")]
+            public int? NCtxTrain { get; set; }
+
+            [JsonProperty("n_embd")]
+            public int? NEmbd { get; set; }
+
+            [JsonProperty("n_params")]
+            public long? NParams { get; set; }
+
+            [JsonProperty("size")]
+            public long? Size { get; set; }
+        }
+
         public async Task<string> TestChatEndpointAsync()
         {
             try

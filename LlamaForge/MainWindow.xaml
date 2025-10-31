@@ -37,7 +37,7 @@
 
                 <!-- App Title with Icon -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="&#xE753;" FontFamily="Segoe MDL2 Assets" FontSize="24"
+                    <TextBlock Text="&#xE82A;" FontFamily="Segoe MDL2 Assets" FontSize="48"
                                Foreground="{DynamicResource AccentGradient}" VerticalAlignment="Center" Margin="0,0,12,0"/>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="LLAMA FORGE" FontSize="18" FontWeight="Bold"
@@ -276,7 +276,7 @@
                                       SelectedItem="{Binding SelectedVariant}"
                                       DisplayMemberPath="DisplayName"
                                       Height="40" Margin="0,0,0,12"
-                                      Foreground="{DynamicResource TextPrimary}"
+                                      Foreground="{DynamicResource BackgroundPrimary}"
                                       IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
 
                             <TextBlock Grid.Row="1" Text="{Binding SelectedVariant.Description}"
@@ -557,9 +557,9 @@
                                 <DropShadowEffect ShadowDepth="0" BlurRadius="30" Color="#0EA5E9" Opacity="0.4"/>
                             </Border.Effect>
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="&#xE753;" FontFamily="Segoe MDL2 Assets" FontSize="64"
+                                <TextBlock Text="&#xE82A;" FontFamily="Segoe MDL2 Assets" FontSize="128"
                                           Foreground="{DynamicResource AccentGradient}"
-                                          HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                                          HorizontalAlignment="Center" Margin="0,0,0,-50"/>
                                 <TextBlock Text="LLAMA FORGE" FontSize="32" FontWeight="Bold"
                                           Foreground="{DynamicResource TextPrimary}" 
                                           HorizontalAlignment="Center"/>

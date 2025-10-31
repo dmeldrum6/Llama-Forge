@@ -59,7 +59,7 @@
                                     <Ellipse Width="28" Height="28"
                                             Fill="{DynamicResource AccentPrimary}"
                                             Margin="0,0,12,0"/>
-                                    <TextBlock Text="Step 1: Download a Model"
+                                    <TextBlock Text="Step 1: Download llama.cpp"
                                               FontSize="16"
                                               FontWeight="SemiBold"
                                               Foreground="{DynamicResource TextPrimary}"
@@ -68,8 +68,8 @@
                                 <TextBlock TextWrapping="Wrap"
                                           Foreground="{DynamicResource TextSecondary}"
                                           Margin="40,0,0,0">
-                                    Go to the <Bold>Download/Update</Bold> tab and select a Llama model variant from HuggingFace.
-                                    Choose a model size that fits your hardware capabilities and click Download.
+                                    Go to the <Bold>Download/Update</Bold> tab and select a llama.cpp variant for your hardware (CPU, CUDA for NVIDIA, Vulkan, etc.).
+                                    Click <Bold>Download Selected</Bold> to get the llama.cpp server binaries.
                                 </TextBlock>
                             </StackPanel>
                         </Border>
@@ -86,7 +86,7 @@
                                     <Ellipse Width="28" Height="28"
                                             Fill="{DynamicResource AccentSecondary}"
                                             Margin="0,0,12,0"/>
-                                    <TextBlock Text="Step 2: Configure the Server"
+                                    <TextBlock Text="Step 2: Get a Model"
                                               FontSize="16"
                                               FontWeight="SemiBold"
                                               Foreground="{DynamicResource TextPrimary}"
@@ -95,8 +95,8 @@
                                 <TextBlock TextWrapping="Wrap"
                                           Foreground="{DynamicResource TextSecondary}"
                                           Margin="40,0,0,0">
-                                    Navigate to the <Bold>Server</Bold> tab and configure your settings.
-                                    Set the model path (if not auto-filled), adjust context size, threads, and GPU layers based on your system.
+                                    Download a GGUF model file from HuggingFace (search for "GGUF" models).
+                                    Popular options include Llama 3, Mistral, or Phi models. Choose a size that fits your RAM/VRAM.
                                 </TextBlock>
                             </StackPanel>
                         </Border>
@@ -113,7 +113,7 @@
                                     <Ellipse Width="28" Height="28"
                                             Fill="{DynamicResource AccentCyan}"
                                             Margin="0,0,12,0"/>
-                                    <TextBlock Text="Step 3: Start the Server"
+                                    <TextBlock Text="Step 3: Configure the Server"
                                               FontSize="16"
                                               FontWeight="SemiBold"
                                               Foreground="{DynamicResource TextPrimary}"
@@ -122,8 +122,8 @@
                                 <TextBlock TextWrapping="Wrap"
                                           Foreground="{DynamicResource TextSecondary}"
                                           Margin="40,0,0,0">
-                                    Click the <Bold>Start Server</Bold> button to launch the Llama server.
-                                    Monitor the logs to ensure the server starts successfully.
+                                    Navigate to the <Bold>Server</Bold> tab. Select your llama.cpp variant, browse to your model file,
+                                    and adjust settings like context size, threads, and GPU layers based on your system.
                                 </TextBlock>
                             </StackPanel>
                         </Border>
@@ -133,13 +133,40 @@
                                BorderBrush="{DynamicResource AccentPurple}"
                                BorderThickness="2,0,0,0"
                                Padding="20,16"
+                               Margin="0,0,0,16"
                                CornerRadius="4">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                     <Ellipse Width="28" Height="28"
                                             Fill="{DynamicResource AccentPurple}"
                                             Margin="0,0,12,0"/>
-                                    <TextBlock Text="Step 4: Start Chatting"
+                                    <TextBlock Text="Step 4: Start the Server"
+                                              FontSize="16"
+                                              FontWeight="SemiBold"
+                                              Foreground="{DynamicResource TextPrimary}"
+                                              VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock TextWrapping="Wrap"
+                                          Foreground="{DynamicResource TextSecondary}"
+                                          Margin="40,0,0,0">
+                                    Click the <Bold>Start Server</Bold> button in the Server tab.
+                                    Monitor the logs to ensure the server starts successfully.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Step 5 -->
+                        <Border Background="{DynamicResource BackgroundSecondary}"
+                               BorderBrush="{DynamicResource SuccessColor}"
+                               BorderThickness="2,0,0,0"
+                               Padding="20,16"
+                               CornerRadius="4">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <Ellipse Width="28" Height="28"
+                                            Fill="{DynamicResource SuccessColor}"
+                                            Margin="0,0,12,0"/>
+                                    <TextBlock Text="Step 5: Start Chatting"
                                               FontSize="16"
                                               FontWeight="SemiBold"
                                               Foreground="{DynamicResource TextPrimary}"

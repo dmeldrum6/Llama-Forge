@@ -198,6 +198,35 @@
             <Setter Property="FontSize" Value="14"/>
         </Style>
 
+        <!-- ComboBoxItem Style for better visibility -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="{DynamicResource BackgroundSecondary}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="0"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource BackgroundCard}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource BackgroundCard}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource AccentPrimary}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Modern TabControl Style -->
         <Style TargetType="TabControl">
             <Setter Property="Background" Value="Transparent"/>

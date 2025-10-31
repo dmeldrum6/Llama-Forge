@@ -9,6 +9,9 @@ namespace LlamaForge
         {
             base.OnStartup(e);
 
+            // Set shutdown mode to prevent app from closing when startup screen closes
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
             // Load settings to check if we should show the startup screen
             var settingsService = new SettingsService();
             var settings = settingsService.LoadSettings();
@@ -27,8 +30,13 @@ namespace LlamaForge
                 }
             }
 
-            // Show the main window
+            // Show the main window and set it as the main application window
             var mainWindow = new MainWindow();
+            MainWindow = mainWindow;
+
+            // Now switch shutdown mode to close when main window closes
+            ShutdownMode = ShutdownMode.OnMainWindowClose;
+
             mainWindow.Show();
         }
     }

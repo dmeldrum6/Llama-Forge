@@ -255,6 +255,10 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
                     <!-- Variant Selection -->
@@ -285,18 +289,127 @@
                         </Grid>
                     </GroupBox>
 
-                    <!-- Server Configuration -->
-                    <GroupBox Grid.Row="1" Margin="0,0,0,16">
+                    <!-- Model Information (shown when server is running) -->
+                    <GroupBox Grid.Row="1" Margin="0,0,0,16" Visibility="{Binding HasModelInfo, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <GroupBox.Header>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE115;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
+                                <TextBlock Text="&#xE8F1;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
                                           Foreground="{DynamicResource AccentPrimary}"/>
-                                <TextBlock Text="Server Configuration" FontSize="16" FontWeight="SemiBold"/>
+                                <TextBlock Text="Model Information" FontSize="16" FontWeight="SemiBold"/>
                             </StackPanel>
                         </GroupBox.Header>
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Model Name:" Margin="0,0,0,8" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CurrentModelInfo.Name}" Margin="0,0,0,8" Foreground="{DynamicResource TextPrimary}"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Architecture:" Margin="0,0,0,8" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CurrentModelInfo.Architecture}" Margin="0,0,0,8" Foreground="{DynamicResource TextPrimary}"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Size:" Margin="0,0,0,8" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CurrentModelInfo.SizeLabel}" Margin="0,0,0,8" Foreground="{DynamicResource TextPrimary}"/>
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Vocabulary:" Margin="0,0,0,8" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding CurrentModelInfo.Meta.VocabSize, StringFormat='{}{0:N0} tokens'}" Margin="0,0,0,8" Foreground="{DynamicResource TextPrimary}"/>
+
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Training Context:" Margin="0,0,0,8" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding CurrentModelInfo.Meta.TrainingContextLength, StringFormat='{}{0:N0} tokens'}" Margin="0,0,0,8" Foreground="{DynamicResource TextPrimary}"/>
+
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Embedding Size:" Margin="0,0,0,8" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding CurrentModelInfo.Meta.EmbeddingDimensions}" Margin="0,0,0,8" Foreground="{DynamicResource TextPrimary}"/>
+
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="License:" Margin="0,0,0,8" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding CurrentModelInfo.License}" Margin="0,0,0,8" Foreground="{DynamicResource TextPrimary}"/>
+                        </Grid>
+                    </GroupBox>
+
+                    <!-- Basic Configuration -->
+                    <GroupBox Grid.Row="2" Margin="0,0,0,16">
+                        <GroupBox.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE115;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
+                                          Foreground="{DynamicResource AccentPrimary}"/>
+                                <TextBlock Text="Basic Configuration" FontSize="16" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </GroupBox.Header>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="140"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Model File:" VerticalAlignment="Center"
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Path to the GGUF model file"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding ModelPath}" Margin="0,0,12,12"
+                                     IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+                            <Button Grid.Row="0" Grid.Column="2" Command="{Binding BrowseModelCommand}" Margin="0,0,0,12"
+                                    IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE8E5;" FontFamily="Segoe MDL2 Assets" FontSize="14" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Browse" FontSize="13"/>
+                                </StackPanel>
+                            </Button>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Host:" VerticalAlignment="Center"
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Network address to listen on (default: 127.0.0.1)"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Host}" Margin="0,0,0,12"
+                                     IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Port:" VerticalAlignment="Center"
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Network port to listen on (default: 8080)"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Port}" Margin="0,0,0,12"
+                                     IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Context Size:" VerticalAlignment="Center"
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Token context window size (default: 2048)"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding ContextSize}" Margin="0,0,0,12"
+                                     IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Model Alias:" VerticalAlignment="Center"
+                                       Margin="0,0,0,0" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Friendly name returned in API responses (optional)"/>
+                            <TextBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding ModelAlias}" Margin="0,0,0,0"
+                                     IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+                        </Grid>
+                    </GroupBox>
+
+                    <!-- Performance Settings -->
+                    <GroupBox Grid.Row="3" Margin="0,0,0,16">
+                        <GroupBox.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
+                                          Foreground="{DynamicResource AccentCyan}"/>
+                                <TextBlock Text="Performance Settings" FontSize="16" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </GroupBox.Header>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="140"/>
                             </Grid.ColumnDefinitions>
@@ -310,52 +423,136 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Model File:" VerticalAlignment="Center"
-                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
-                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding ModelPath}" Margin="0,0,12,12"
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Threads:" VerticalAlignment="Center"
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Number of CPU threads for generation (default: 4)"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Threads}" Margin="0,0,12,12"
                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
-                            <Button Grid.Row="0" Grid.Column="2" Command="{Binding BrowseModelCommand}" Margin="0,0,0,12"
+                            <Button Grid.Row="0" Grid.Column="2" Command="{Binding AutoDetectThreadsCommand}" Margin="0,0,0,12"
                                     IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE8E5;" FontFamily="Segoe MDL2 Assets" FontSize="14" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Browse" FontSize="13"/>
+                                    <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" FontSize="14" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Auto-Detect" FontSize="13"/>
                                 </StackPanel>
                             </Button>
 
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Host:" VerticalAlignment="Center"
-                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Host}" Margin="0,0,0,12"
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Batch Threads:" VerticalAlignment="Center"
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Threads for batch/prompt processing (default: 4)"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding BatchThreads}" Margin="0,0,0,12"
                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
 
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Port:" VerticalAlignment="Center"
-                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
-                            <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Port}" Margin="0,0,0,12"
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Batch Size:" VerticalAlignment="Center"
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Batch size for prompt processing (default: 512)"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding BatchSize}" Margin="0,0,0,12"
                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
 
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Context Size:" VerticalAlignment="Center"
-                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
-                            <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding ContextSize}" Margin="0,0,0,12"
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Parallel Slots:" VerticalAlignment="Center"
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Number of parallel request slots (default: 1)"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding ParallelSlots}" Margin="0,0,0,12"
                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
 
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Threads:" VerticalAlignment="Center"
-                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
-                            <TextBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Threads}" Margin="0,0,0,12"
-                                     IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Continuous Batching:" VerticalAlignment="Center"
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Enable dynamic batching for improved throughput"/>
+                            <CheckBox Grid.Row="4" Grid.Column="1" IsChecked="{Binding ContinuousBatching}" Margin="0,0,0,12"
+                                      VerticalAlignment="Center"
+                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
 
                             <TextBlock Grid.Row="5" Grid.Column="0" Text="GPU Layers:" VerticalAlignment="Center"
-                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Number of layers to offload to GPU (0 = CPU only)"/>
                             <TextBox Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding GpuLayers}" Margin="0,0,0,12"
                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
 
-                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Additional Args:" VerticalAlignment="Center"
-                                       FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
-                            <TextBox Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding AdditionalArgs}"
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Timeout (seconds):" VerticalAlignment="Center"
+                                       Margin="0,0,0,0" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Read/write timeout in seconds (default: 600)"/>
+                            <TextBox Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Timeout}" Margin="0,0,0,0"
+                                     IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+                        </Grid>
+                    </GroupBox>
+
+                    <!-- Memory Management -->
+                    <GroupBox Grid.Row="4" Margin="0,0,0,16">
+                        <GroupBox.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE7B8;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
+                                          Foreground="{DynamicResource AccentGreen}"/>
+                                <TextBlock Text="Memory Management" FontSize="16" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </GroupBox.Header>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="220"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Lock Model in Memory (mlock):" VerticalAlignment="Center"
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Prevent model from being swapped to disk (improves latency)"/>
+                            <CheckBox Grid.Row="0" Grid.Column="1" IsChecked="{Binding MemoryLock}" Margin="0,0,0,12"
+                                      VerticalAlignment="Center"
+                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Disable Memory Mapping (no-mmap):" VerticalAlignment="Center"
+                                       Margin="0,0,0,0" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Force loading model into RAM instead of memory-mapping"/>
+                            <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding DisableMemoryMapping}" Margin="0,0,0,0"
+                                      VerticalAlignment="Center"
+                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+                        </Grid>
+                    </GroupBox>
+
+                    <!-- Advanced Settings -->
+                    <GroupBox Grid.Row="5" Margin="0,0,0,16">
+                        <GroupBox.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
+                                          Foreground="{DynamicResource AccentOrange}"/>
+                                <TextBlock Text="Advanced Settings" FontSize="16" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </GroupBox.Header>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="API Key:" VerticalAlignment="Center"
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Authorization token for API requests (optional)"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding ApiKey}" Margin="0,0,0,12"
+                                     IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Enable Embeddings:" VerticalAlignment="Center"
+                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Enable embedding extraction endpoints"/>
+                            <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding EnableEmbeddings}" Margin="0,0,0,12"
+                                      VerticalAlignment="Center"
+                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Additional Args:" VerticalAlignment="Center"
+                                       Margin="0,0,0,0" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
+                                       ToolTip="Custom command-line arguments"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding AdditionalArgs}" Margin="0,0,0,0"
                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
                         </Grid>
                     </GroupBox>
 
                     <!-- Server Controls -->
-                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,16">
+                    <StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0,0,0,16">
                         <Button Width="160" Height="48" Margin="0,0,16,0"
                                 Command="{Binding StartServerCommand}"
                                 Style="{StaticResource SuccessButton}">
@@ -375,7 +572,7 @@
                     </StackPanel>
 
                     <!-- Server Logs -->
-                    <GroupBox Grid.Row="3">
+                    <GroupBox Grid.Row="7">
                         <GroupBox.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
@@ -388,7 +585,7 @@
                                      Height="400"
                                      Padding="0,0,0,16">
                             <ItemsControl ItemsSource="{Binding ServerLogs}">
-                                <ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemTemplate">
                                     <DataTemplate>
                                         <TextBox Text="{Binding Mode=OneWay}"
                                                  FontFamily="Consolas"

@@ -144,19 +144,60 @@ namespace LlamaForge.Services
 
         private string BuildCommandLineArguments()
         {
+            // Basic Configuration
             var args = $"-m \"{_config.ModelPath}\" ";
             args += $"--host {_config.Host} ";
             args += $"--port {_config.Port} ";
             args += $"-c {_config.ContextSize} ";
+
+            // Performance Settings
             args += $"-t {_config.Threads} ";
+            args += $"-b {_config.BatchSize} ";
+            args += $"-tb {_config.BatchThreads} ";
+            args += $"-np {_config.ParallelSlots} ";
+
+            if (_config.ContinuousBatching)
+            {
+                args += "-cb ";
+            }
 
             // Always pass -ngl to ensure GPU layers setting is respected
             // -ngl 0 = CPU only, -ngl N = offload N layers to GPU
             args += $"-ngl {_config.GpuLayers} ";
 
+            // Memory Management
+            if (_config.MemoryLock)
+            {
+                args += "--mlock ";
+            }
+
+            if (_config.DisableMemoryMapping)
+            {
+                args += "--no-mmap ";
+            }
+
+            // Server Features
+            if (!string.IsNullOrWhiteSpace(_config.ModelAlias))
+            {
+                args += $"-a \"{_config.ModelAlias}\" ";
+            }
+
+            if (!string.IsNullOrWhiteSpace(_config.ApiKey))
+            {
+                args += $"--api-key \"{_config.ApiKey}\" ";
+            }
+
+            args += $"-to {_config.Timeout} ";
+
+            if (_config.EnableEmbeddings)
+            {
+                args += "--embedding ";
+            }
+
             // Enable verbose logging to diagnose chat issues
             args += "--verbose ";
 
+            // Additional custom arguments
             if (!string.IsNullOrWhiteSpace(_config.AdditionalArgs))
             {
                 args += _config.AdditionalArgs;

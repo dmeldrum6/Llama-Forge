@@ -585,7 +585,7 @@
                                      Height="400"
                                      Padding="0,0,0,16">
                             <ItemsControl ItemsSource="{Binding ServerLogs}">
-                                <ItemsControl.ItemTemplate">
+                                <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <TextBox Text="{Binding Mode=OneWay}"
                                                  FontFamily="Consolas"

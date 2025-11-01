@@ -211,11 +211,11 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBox Grid.Column="0" Text="{Binding UserInput, UpdateSourceTrigger=PropertyChanged}"
-                                     Height="60" TextWrapping="Wrap" AcceptsReturn="True"
+                                     Height="60" TextWrapping="Wrap" AcceptsReturn="False"
                                      VerticalScrollBarVisibility="Auto"
                                      IsEnabled="{Binding IsServerRunning}">
                                 <TextBox.InputBindings>
-                                    <KeyBinding Key="Return" Modifiers="Control" Command="{Binding SendMessageCommand}"/>
+                                    <KeyBinding Key="Return" Command="{Binding SendMessageCommand}"/>
                                 </TextBox.InputBindings>
                             </TextBox>
 
@@ -262,15 +262,15 @@
                         </Grid.RowDefinitions>
 
                     <!-- Variant Selection -->
-                    <GroupBox Grid.Row="0" Margin="0,0,0,16">
-                        <GroupBox.Header>
+                    <Expander Grid.Row="0" Margin="0,0,0,16" IsExpanded="True">
+                        <Expander.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
                                           Foreground="{DynamicResource AccentPurple}"/>
                                 <TextBlock Text="Select llama.cpp Variant" FontSize="16" FontWeight="SemiBold"/>
                             </StackPanel>
-                        </GroupBox.Header>
-                        <Grid>
+                        </Expander.Header>
+                        <Grid Margin="16,8,0,0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
@@ -287,18 +287,18 @@
                                        TextWrapping="Wrap" FontStyle="Italic"
                                        Foreground="{DynamicResource TextSecondary}" LineHeight="20"/>
                         </Grid>
-                    </GroupBox>
+                    </Expander>
 
                     <!-- Model Information (shown when server is running) -->
-                    <GroupBox Grid.Row="1" Margin="0,0,0,16" Visibility="{Binding HasModelInfo, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <GroupBox.Header>
+                    <Expander Grid.Row="1" Margin="0,0,0,16" IsExpanded="True" Visibility="{Binding HasModelInfo, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Expander.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE8F1;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
                                           Foreground="{DynamicResource AccentPrimary}"/>
                                 <TextBlock Text="Model Information" FontSize="16" FontWeight="SemiBold"/>
                             </StackPanel>
-                        </GroupBox.Header>
-                        <Grid>
+                        </Expander.Header>
+                        <Grid Margin="16,8,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="160"/>
                                 <ColumnDefinition Width="*"/>
@@ -334,18 +334,18 @@
                             <TextBlock Grid.Row="6" Grid.Column="0" Text="License:" Margin="0,0,0,8" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
                             <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding CurrentModelInfo.License}" Margin="0,0,0,8" Foreground="{DynamicResource TextPrimary}"/>
                         </Grid>
-                    </GroupBox>
+                    </Expander>
 
                     <!-- Basic Configuration -->
-                    <GroupBox Grid.Row="2" Margin="0,0,0,16">
-                        <GroupBox.Header>
+                    <Expander Grid.Row="2" Margin="0,0,0,16" IsExpanded="True">
+                        <Expander.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE115;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
                                           Foreground="{DynamicResource AccentPrimary}"/>
                                 <TextBlock Text="Basic Configuration" FontSize="16" FontWeight="SemiBold"/>
                             </StackPanel>
-                        </GroupBox.Header>
-                        <Grid>
+                        </Expander.Header>
+                        <Grid Margin="16,8,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="160"/>
                                 <ColumnDefinition Width="*"/>
@@ -396,18 +396,18 @@
                             <TextBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding ModelAlias}" Margin="0,0,0,0"
                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
                         </Grid>
-                    </GroupBox>
+                    </Expander>
 
                     <!-- Performance Settings -->
-                    <GroupBox Grid.Row="3" Margin="0,0,0,16">
-                        <GroupBox.Header>
+                    <Expander Grid.Row="3" Margin="0,0,0,16" IsExpanded="False">
+                        <Expander.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
                                           Foreground="{DynamicResource AccentCyan}"/>
                                 <TextBlock Text="Performance Settings" FontSize="16" FontWeight="SemiBold"/>
                             </StackPanel>
-                        </GroupBox.Header>
-                        <Grid>
+                        </Expander.Header>
+                        <Grid Margin="16,8,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="160"/>
                                 <ColumnDefinition Width="*"/>
@@ -473,18 +473,18 @@
                             <TextBox Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Timeout}" Margin="0,0,0,0"
                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
                         </Grid>
-                    </GroupBox>
+                    </Expander>
 
                     <!-- Memory Management -->
-                    <GroupBox Grid.Row="4" Margin="0,0,0,16">
-                        <GroupBox.Header>
+                    <Expander Grid.Row="4" Margin="0,0,0,16" IsExpanded="False">
+                        <Expander.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE7B8;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
                                           Foreground="{DynamicResource AccentGreen}"/>
                                 <TextBlock Text="Memory Management" FontSize="16" FontWeight="SemiBold"/>
                             </StackPanel>
-                        </GroupBox.Header>
-                        <Grid>
+                        </Expander.Header>
+                        <Grid Margin="16,8,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="220"/>
                                 <ColumnDefinition Width="*"/>
@@ -508,48 +508,31 @@
                                       VerticalAlignment="Center"
                                       IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
                         </Grid>
-                    </GroupBox>
+                    </Expander>
 
-                    <!-- Advanced Settings -->
-                    <GroupBox Grid.Row="5" Margin="0,0,0,16">
-                        <GroupBox.Header>
+                    <!-- System Prompt -->
+                    <Expander Grid.Row="5" Margin="0,0,0,16" IsExpanded="True">
+                        <Expander.Header>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
-                                          Foreground="{DynamicResource AccentOrange}"/>
-                                <TextBlock Text="Advanced Settings" FontSize="16" FontWeight="SemiBold"/>
+                                <TextBlock Text="&#xE8F2;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
+                                          Foreground="{DynamicResource AccentPurple}"/>
+                                <TextBlock Text="System Prompt" FontSize="16" FontWeight="SemiBold"/>
                             </StackPanel>
-                        </GroupBox.Header>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="160"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                        </Expander.Header>
+                        <Grid Margin="16,8,0,0">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="API Key:" VerticalAlignment="Center"
-                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
-                                       ToolTip="Authorization token for API requests (optional)"/>
-                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding ApiKey}" Margin="0,0,0,12"
-                                     IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
-
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Enable Embeddings:" VerticalAlignment="Center"
-                                       Margin="0,0,0,12" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
-                                       ToolTip="Enable embedding extraction endpoints"/>
-                            <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding EnableEmbeddings}" Margin="0,0,0,12"
-                                      VerticalAlignment="Center"
-                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
-
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Additional Args:" VerticalAlignment="Center"
-                                       Margin="0,0,0,0" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"
-                                       ToolTip="Custom command-line arguments"/>
-                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding AdditionalArgs}" Margin="0,0,0,0"
+                            <TextBlock Grid.Row="0" Text="Define the AI assistant's behavior and personality:"
+                                       Margin="0,0,0,8" FontWeight="Medium" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBox Grid.Row="1" Text="{Binding SystemPrompt, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="80" TextWrapping="Wrap" AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"
                                      IsEnabled="{Binding IsServerRunning, Converter={StaticResource InverseBooleanConverter}}"/>
                         </Grid>
-                    </GroupBox>
+                    </Expander>
 
                     <!-- Server Controls -->
                     <StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0,0,0,16">
@@ -572,15 +555,15 @@
                     </StackPanel>
 
                     <!-- Server Logs -->
-                    <GroupBox Grid.Row="7">
-                        <GroupBox.Header>
+                    <Expander Grid.Row="7" IsExpanded="True">
+                        <Expander.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
                                           Foreground="{DynamicResource AccentCyan}"/>
                                 <TextBlock Text="Server Logs" FontSize="16" FontWeight="SemiBold"/>
                             </StackPanel>
-                        </GroupBox.Header>
-                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                        </Expander.Header>
+                        <ScrollViewer Margin="16,8,0,0" VerticalScrollBarVisibility="Auto"
                                      HorizontalScrollBarVisibility="Auto"
                                      Height="400"
                                      Padding="0,0,0,16">
@@ -601,7 +584,7 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </ScrollViewer>
-                    </GroupBox>
+                    </Expander>
                     </Grid>
                 </ScrollViewer>
             </TabItem>

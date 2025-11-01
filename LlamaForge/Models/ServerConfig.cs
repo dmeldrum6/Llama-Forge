@@ -25,6 +25,7 @@ namespace LlamaForge.Models
         public string ApiKey { get; set; } = string.Empty;
         public int Timeout { get; set; } = 600;
         public bool EnableEmbeddings { get; set; } = false;
+        public string SystemPrompt { get; set; } = "You are a helpful assistant";
 
         // Advanced
         public string AdditionalArgs { get; set; } = string.Empty;

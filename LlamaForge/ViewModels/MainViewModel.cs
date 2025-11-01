@@ -202,6 +202,13 @@ namespace LlamaForge.ViewModels
             set { _additionalArgs = value; OnPropertyChanged(); Config.AdditionalArgs = value; SaveSettings(); }
         }
 
+        private string _systemPrompt = "You are a helpful assistant";
+        public string SystemPrompt
+        {
+            get => _systemPrompt;
+            set { _systemPrompt = value; OnPropertyChanged(); Config.SystemPrompt = value; SaveSettings(); }
+        }
+
         private ModelInfo? _currentModelInfo;
         public ModelInfo? CurrentModelInfo
         {
@@ -847,6 +854,7 @@ namespace LlamaForge.ViewModels
                     _timeout = settings.ServerConfig.Timeout;
                     _enableEmbeddings = settings.ServerConfig.EnableEmbeddings;
                     _additionalArgs = settings.ServerConfig.AdditionalArgs;
+                    _systemPrompt = settings.ServerConfig.SystemPrompt;
 
                     // Update Config object
                     Config.ModelPath = _modelPath;
@@ -866,6 +874,7 @@ namespace LlamaForge.ViewModels
                     Config.Timeout = _timeout;
                     Config.EnableEmbeddings = _enableEmbeddings;
                     Config.AdditionalArgs = _additionalArgs;
+                    Config.SystemPrompt = _systemPrompt;
 
                     // Notify UI of changes
                     OnPropertyChanged(nameof(ModelPath));
@@ -885,6 +894,7 @@ namespace LlamaForge.ViewModels
                     OnPropertyChanged(nameof(Timeout));
                     OnPropertyChanged(nameof(EnableEmbeddings));
                     OnPropertyChanged(nameof(AdditionalArgs));
+                    OnPropertyChanged(nameof(SystemPrompt));
                 }
 
                 // Load selected variant
@@ -931,7 +941,8 @@ namespace LlamaForge.ViewModels
                         ApiKey = _apiKey,
                         Timeout = _timeout,
                         EnableEmbeddings = _enableEmbeddings,
-                        AdditionalArgs = _additionalArgs
+                        AdditionalArgs = _additionalArgs,
+                        SystemPrompt = _systemPrompt
                     },
                     SelectedVariantType = _selectedVariant?.Type
                 };

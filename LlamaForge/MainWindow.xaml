@@ -267,7 +267,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
                                           Foreground="{DynamicResource AccentPurple}"/>
-                                <TextBlock Text="Select llama.cpp Variant" FontSize="16" FontWeight="SemiBold"/>
+                                <TextBlock Text="Select llama.cpp Variant" FontSize="16" FontWeight="SemiBold" Foreground="White"/>
                             </StackPanel>
                         </Expander.Header>
                         <Grid Margin="16,8,0,0">
@@ -342,7 +342,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE115;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
                                           Foreground="{DynamicResource AccentPrimary}"/>
-                                <TextBlock Text="Basic Configuration" FontSize="16" FontWeight="SemiBold"/>
+                                <TextBlock Text="Basic Configuration" FontSize="16" FontWeight="SemiBold" Foreground="White"/>
                             </StackPanel>
                         </Expander.Header>
                         <Grid Margin="16,8,0,0">
@@ -404,7 +404,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
                                           Foreground="{DynamicResource AccentCyan}"/>
-                                <TextBlock Text="Performance Settings" FontSize="16" FontWeight="SemiBold"/>
+                                <TextBlock Text="Performance Settings" FontSize="16" FontWeight="SemiBold" Foreground="White"/>
                             </StackPanel>
                         </Expander.Header>
                         <Grid Margin="16,8,0,0">
@@ -480,8 +480,8 @@
                         <Expander.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE7B8;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
-                                          Foreground="{DynamicResource AccentGreen}"/>
-                                <TextBlock Text="Memory Management" FontSize="16" FontWeight="SemiBold"/>
+                                          Foreground="{DynamicResource AccentCyan}"/>
+                                <TextBlock Text="Memory Management" FontSize="16" FontWeight="SemiBold" Foreground="White"/>
                             </StackPanel>
                         </Expander.Header>
                         <Grid Margin="16,8,0,0">
@@ -516,7 +516,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE8F2;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
                                           Foreground="{DynamicResource AccentPurple}"/>
-                                <TextBlock Text="System Prompt" FontSize="16" FontWeight="SemiBold"/>
+                                <TextBlock Text="System Prompt" FontSize="16" FontWeight="SemiBold" Foreground="White"/>
                             </StackPanel>
                         </Expander.Header>
                         <Grid Margin="16,8,0,0">
@@ -560,7 +560,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
                                           Foreground="{DynamicResource AccentCyan}"/>
-                                <TextBlock Text="Server Logs" FontSize="16" FontWeight="SemiBold"/>
+                                <TextBlock Text="Server Logs" FontSize="16" FontWeight="SemiBold" Foreground="White"/>
                             </StackPanel>
                         </Expander.Header>
                         <ScrollViewer Margin="16,8,0,0" VerticalScrollBarVisibility="Auto"

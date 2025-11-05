@@ -4,6 +4,7 @@
              xmlns:helpers="clr-namespace:LlamaForge.Helpers">
     <Application.Resources>
         <helpers:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+        <helpers:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <!-- THEME COLORS - Dark Theme (Default) -->

@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LlamaForge.ViewModels"
         xmlns:controls="clr-namespace:LlamaForge.Controls"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         mc:Ignorable="d"
         Title="Llama Forge - Local AI Server &amp; Chat" Height="800" Width="1200"
         WindowStartupLocation="CenterScreen"
@@ -114,128 +115,39 @@
                     </StackPanel>
                 </TabItem.Header>
                 <Grid Margin="0,16,0,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                    <!-- llama.cpp WebUI -->
+                    <wv2:WebView2 x:Name="ChatWebView" />
 
-                    <!-- Chat Messages -->
-                    <Border Grid.Row="0" Background="{DynamicResource BackgroundCard}"
-                            BorderBrush="{DynamicResource BorderPrimary}" BorderThickness="1"
-                            CornerRadius="8" Margin="0,0,0,16">
-                        <Border.Effect>
-                            <DropShadowEffect ShadowDepth="0" BlurRadius="20" Color="#000000" Opacity="0.3"/>
-                        </Border.Effect>
-                        <ScrollViewer VerticalScrollBarVisibility="Auto" x:Name="ChatScrollViewer" Padding="16">
-                            <ItemsControl ItemsSource="{Binding ChatMessages}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Margin="0,0,0,16" Padding="16" CornerRadius="12">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="Background">
-                                                        <Setter.Value>
-                                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                                                <GradientStop Color="#1E3A8A" Offset="0"/>
-                                                                <GradientStop Color="#3730A3" Offset="1"/>
-                                                            </LinearGradientBrush>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                    <Setter Property="HorizontalAlignment" Value="Right"/>
-                                                    <Setter Property="MaxWidth" Value="700"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsUser}" Value="False">
-                                                            <Setter Property="Background" Value="{DynamicResource BackgroundSecondary}"/>
-                                                            <Setter Property="HorizontalAlignment" Value="Left"/>
-                                                            <Setter Property="BorderBrush" Value="{DynamicResource BorderPrimary}"/>
-                                                            <Setter Property="BorderThickness" Value="1"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            <Border.Effect>
-                                                <DropShadowEffect ShadowDepth="0" BlurRadius="12" Color="#0EA5E9" Opacity="0.3"/>
-                                            </Border.Effect>
-                                            <StackPanel>
-                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                                    <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="14" Margin="0,0,8,0"
-                                                               Foreground="{DynamicResource AccentPrimary}">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
-                                                                <Setter Property="Text" Value="&#xE77B;"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsUser}" Value="False">
-                                                                        <Setter Property="Text" Value="&#xE753;"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </TextBlock.Style>
-                                                    </TextBlock>
-                                                    <TextBlock FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextPrimary}">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
-                                                                <Setter Property="Text" Value="YOU"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsUser}" Value="False">
-                                                                        <Setter Property="Text" Value="ASSISTANT"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </TextBlock.Style>
-                                                    </TextBlock>
-                                                </StackPanel>
-                                                <controls:MessageContentControl ContentText="{Binding Content}"/>
-                                                <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}"
-                                                          FontSize="11" Foreground="{DynamicResource TextTertiary}"
-                                                          Margin="0,8,0,0" FontStyle="Italic"/>
-                                            </StackPanel>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-                    </Border>
-
-                    <!-- Input Area -->
-                    <Border Grid.Row="1" Background="{DynamicResource BackgroundCard}"
-                            BorderBrush="{DynamicResource BorderPrimary}" BorderThickness="1"
-                            CornerRadius="8" Padding="16">
-                        <Border.Effect>
-                            <DropShadowEffect ShadowDepth="0" BlurRadius="20" Color="#000000" Opacity="0.3"/>
-                        </Border.Effect>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <TextBox Grid.Column="0" Text="{Binding UserInput, UpdateSourceTrigger=PropertyChanged}"
-                                     Height="60" TextWrapping="Wrap" AcceptsReturn="False"
-                                     VerticalScrollBarVisibility="Auto"
-                                     IsEnabled="{Binding IsServerRunning}">
-                                <TextBox.InputBindings>
-                                    <KeyBinding Key="Return" Command="{Binding SendMessageCommand}"/>
-                                </TextBox.InputBindings>
-                            </TextBox>
-
-                            <Button Grid.Column="1" Width="100" Height="60" Margin="12,0,0,0"
-                                    Command="{Binding SendMessageCommand}"
-                                    Style="{StaticResource SuccessButton}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE724;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Send" FontSize="14" FontWeight="SemiBold"/>
-                                </StackPanel>
-                            </Button>
-
-                            <Button Grid.Column="2" Width="100" Height="60" Margin="12,0,0,0"
-                                    Command="{Binding ClearChatCommand}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Clear" FontSize="14" FontWeight="SemiBold"/>
-                                </StackPanel>
-                            </Button>
-                        </Grid>
+                    <!-- Message shown when server is not running -->
+                    <Border Background="{DynamicResource BackgroundCard}"
+                            BorderBrush="{DynamicResource BorderPrimary}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="32"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Visibility="{Binding IsServerRunning, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="&#xE7BA;"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       FontSize="64"
+                                       Foreground="{DynamicResource TextTertiary}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,16"/>
+                            <TextBlock Text="Server is not running"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock Text="Please start the server from the Server tab to use the chat interface"
+                                       FontSize="14"
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       HorizontalAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"
+                                       MaxWidth="400"/>
+                        </StackPanel>
                     </Border>
                 </Grid>
             </TabItem>

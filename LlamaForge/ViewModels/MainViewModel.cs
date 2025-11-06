@@ -45,7 +45,7 @@ namespace LlamaForge.ViewModels
         public bool IsServerRunning
         {
             get => _isServerRunning;
-            set { _isServerRunning = value; OnPropertyChanged(); OnPropertyChanged(nameof(CanStartServer)); OnPropertyChanged(nameof(CanStopServer)); }
+            set { _isServerRunning = value; OnPropertyChanged(); OnPropertyChanged(nameof(CanStartServer)); OnPropertyChanged(nameof(CanStopServer)); OnPropertyChanged(nameof(CanOpenBrowser)); }
         }
 
         private string _webUILocalPath = string.Empty;
@@ -59,7 +59,7 @@ namespace LlamaForge.ViewModels
         public bool IsServerReady
         {
             get => _isServerReady;
-            set { _isServerReady = value; OnPropertyChanged(); }
+            set { _isServerReady = value; OnPropertyChanged(); OnPropertyChanged(nameof(CanOpenBrowser)); }
         }
 
         private bool _isBusy;
@@ -246,6 +246,7 @@ namespace LlamaForge.ViewModels
         public bool CanStartServer => !IsServerRunning && !string.IsNullOrWhiteSpace(ModelPath);
         public bool CanStopServer => IsServerRunning;
         public bool CanSendMessage => IsServerRunning && !IsBusy && !string.IsNullOrWhiteSpace(UserInput);
+        public bool CanOpenBrowser => IsServerReady;
 
         // Commands
         public ICommand StartServerCommand { get; }
@@ -257,6 +258,7 @@ namespace LlamaForge.ViewModels
         public ICommand ClearChatCommand { get; }
         public ICommand ToggleThemeCommand { get; }
         public ICommand AutoDetectThreadsCommand { get; }
+        public ICommand OpenBrowserCommand { get; }
 
         public MainViewModel()
         {
@@ -328,6 +330,7 @@ namespace LlamaForge.ViewModels
                 ClearChatCommand = new RelayCommand(_ => ChatMessages.Clear());
                 ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
                 AutoDetectThreadsCommand = new RelayCommand(_ => AutoDetectThreads());
+                OpenBrowserCommand = new RelayCommand(_ => OpenBrowser(), _ => CanOpenBrowser);
 
                 Console.WriteLine("Commands initialized");
                 System.Diagnostics.Debug.WriteLine("Commands initialized");
@@ -849,6 +852,31 @@ namespace LlamaForge.ViewModels
             BatchThreads = processorCount;
             AddServerLog($"Auto-detected {processorCount} CPU threads");
             StatusMessage = $"Threads set to {processorCount} (CPU cores)";
+        }
+
+        private void OpenBrowser()
+        {
+            try
+            {
+                var url = $"http://{Host}:{Port}";
+                AddServerLog($"Opening browser to {url}");
+
+                // Use System.Diagnostics.Process to open the default browser
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                };
+                System.Diagnostics.Process.Start(psi);
+
+                StatusMessage = $"Opened chat client in browser ({url})";
+            }
+            catch (Exception ex)
+            {
+                AddServerLog($"Error opening browser: {ex.Message}");
+                StatusMessage = "Failed to open browser";
+                MessageBox.Show($"Failed to open browser:\n\n{ex.Message}", "Browser Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private string FormatParameterCount(long paramCount)

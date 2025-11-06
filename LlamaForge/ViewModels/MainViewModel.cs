@@ -48,6 +48,13 @@ namespace LlamaForge.ViewModels
             set { _isServerRunning = value; OnPropertyChanged(); OnPropertyChanged(nameof(CanStartServer)); OnPropertyChanged(nameof(CanStopServer)); }
         }
 
+        private string _webUILocalPath = string.Empty;
+        public string WebUILocalPath
+        {
+            get => _webUILocalPath;
+            set { _webUILocalPath = value; OnPropertyChanged(); }
+        }
+
         private bool _isServerReady;
         public bool IsServerReady
         {
@@ -382,7 +389,9 @@ namespace LlamaForge.ViewModels
                 if (!string.IsNullOrEmpty(webUIPath))
                 {
                     Config.WebUIPath = webUIPath;
+                    WebUILocalPath = Path.Combine(webUIPath, "index.html");
                     AddServerLog($"WebUI path set to: {webUIPath}");
+                    AddServerLog($"WebUI file path: {WebUILocalPath}");
                 }
                 else
                 {

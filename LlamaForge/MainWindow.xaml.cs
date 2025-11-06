@@ -147,13 +147,39 @@ namespace LlamaForge
             if (ViewModel == null || ChatWebView.CoreWebView2 == null)
                 return;
 
-            if (ViewModel.IsServerReady)
+            if (ViewModel.IsServerReady && !string.IsNullOrEmpty(ViewModel.WebUILocalPath))
             {
-                // Navigate to llama.cpp's WebUI served from --path directory
-                // The server automatically serves index.html at the root path
-                string url = $"http://{ViewModel.Host}:{ViewModel.Port}/";
-                System.Diagnostics.Debug.WriteLine($"Server is ready, navigating WebView to: {url}");
-                ChatWebView.CoreWebView2.Navigate(url);
+                try
+                {
+                    // Load the WebUI from local filesystem instead of trying to get it from llama-server
+                    // This avoids relying on --path working or the server having static file serving compiled in
+
+                    var webUIDirectory = System.IO.Path.GetDirectoryName(ViewModel.WebUILocalPath);
+                    if (!string.IsNullOrEmpty(webUIDirectory) && System.IO.File.Exists(ViewModel.WebUILocalPath))
+                    {
+                        // Map a virtual hostname to the local directory so JavaScript can make API calls
+                        // without CORS issues (needs an http:// origin, not file://)
+                        ChatWebView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                            "llamaforge.local",
+                            webUIDirectory,
+                            Microsoft.Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow
+                        );
+
+                        // Navigate to the local file using the virtual hostname
+                        string url = "http://llamaforge.local/index.html";
+                        System.Diagnostics.Debug.WriteLine($"Server is ready, loading WebUI from local file: {ViewModel.WebUILocalPath}");
+                        System.Diagnostics.Debug.WriteLine($"Virtual URL: {url}");
+                        ChatWebView.CoreWebView2.Navigate(url);
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"WebUI file not found: {ViewModel.WebUILocalPath}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error loading WebUI: {ex.Message}");
+                }
             }
         }
 

@@ -352,12 +352,33 @@ namespace LlamaForge.Services
 
                 StatusChanged?.Invoke(this, "Downloading WebUI files from llama.cpp repository...");
 
-                // Download the pre-built index.html from llama.cpp repository
-                const string webUIRawUrl = "https://raw.githubusercontent.com/ggml-org/llama.cpp/master/tools/server/public/index.html";
-                var htmlContent = await _httpClient.GetStringAsync(webUIRawUrl);
+                // Download the pre-built index.html.gz from llama.cpp repository
+                const string webUIRawUrl = "https://raw.githubusercontent.com/ggml-org/llama.cpp/master/tools/server/public/index.html.gz";
+                var gzipContent = await _httpClient.GetByteArrayAsync(webUIRawUrl);
 
-                // Save the index.html file
-                await File.WriteAllTextAsync(indexHtmlPath, htmlContent);
+                // Decompress the gzip file
+                using (var compressedStream = new MemoryStream(gzipContent))
+                using (var gzipStream = new System.IO.Compression.GZipStream(compressedStream, System.IO.Compression.CompressionMode.Decompress))
+                using (var decompressedStream = new MemoryStream())
+                {
+                    await gzipStream.CopyToAsync(decompressedStream);
+                    var htmlContent = System.Text.Encoding.UTF8.GetString(decompressedStream.ToArray());
+
+                    // Save the decompressed index.html file
+                    await File.WriteAllTextAsync(indexHtmlPath, htmlContent);
+                }
+
+                // Also download loading.html for fallback
+                try
+                {
+                    const string loadingHtmlUrl = "https://raw.githubusercontent.com/ggml-org/llama.cpp/master/tools/server/public/loading.html";
+                    var loadingContent = await _httpClient.GetStringAsync(loadingHtmlUrl);
+                    await File.WriteAllTextAsync(Path.Combine(webUIPath, "loading.html"), loadingContent);
+                }
+                catch
+                {
+                    // Loading.html is optional, ignore if it fails
+                }
 
                 StatusChanged?.Invoke(this, "WebUI files downloaded successfully.");
                 return webUIPath;

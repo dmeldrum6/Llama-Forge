@@ -333,6 +333,44 @@ namespace LlamaForge.Services
 
             return serverExe ?? Path.Combine(extractPath, "bin", "llama-server.exe");
         }
+
+        public async Task<string> EnsureWebUIFilesAsync()
+        {
+            var webUIPath = Path.Combine(_installPath, "webui");
+            var indexHtmlPath = Path.Combine(webUIPath, "index.html");
+
+            // Check if WebUI files already exist
+            if (File.Exists(indexHtmlPath))
+            {
+                StatusChanged?.Invoke(this, "WebUI files already present.");
+                return webUIPath;
+            }
+
+            try
+            {
+                Directory.CreateDirectory(webUIPath);
+
+                StatusChanged?.Invoke(this, "Downloading WebUI files from llama.cpp repository...");
+
+                // Download the pre-built index.html from llama.cpp repository
+                const string webUIRawUrl = "https://raw.githubusercontent.com/ggml-org/llama.cpp/master/tools/server/public/index.html";
+                var htmlContent = await _httpClient.GetStringAsync(webUIRawUrl);
+
+                // Save the index.html file
+                await File.WriteAllTextAsync(indexHtmlPath, htmlContent);
+
+                StatusChanged?.Invoke(this, "WebUI files downloaded successfully.");
+                return webUIPath;
+            }
+            catch (Exception ex)
+            {
+                StatusChanged?.Invoke(this, $"Warning: Could not download WebUI files: {ex.Message}");
+                StatusChanged?.Invoke(this, "The Chat tab may not work without WebUI files.");
+
+                // Return empty string to indicate failure
+                return string.Empty;
+            }
+        }
     }
 
     public class DownloadProgressEventArgs : EventArgs

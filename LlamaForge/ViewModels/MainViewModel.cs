@@ -369,6 +369,19 @@ namespace LlamaForge.ViewModels
                 AddServerLog($"Model path: {Config.ModelPath}");
                 AddServerLog($"Server config - Host: {Config.Host}, Port: {Config.Port}, Context: {Config.ContextSize}, Threads: {Config.Threads}, GPU Layers: {Config.GpuLayers}");
 
+                // Ensure WebUI files are downloaded
+                AddServerLog("Checking for WebUI files...");
+                var webUIPath = await _githubService.EnsureWebUIFilesAsync();
+                if (!string.IsNullOrEmpty(webUIPath))
+                {
+                    Config.WebUIPath = webUIPath;
+                    AddServerLog($"WebUI path set to: {webUIPath}");
+                }
+                else
+                {
+                    AddServerLog("WARNING: WebUI files could not be downloaded. Chat tab may not work.");
+                }
+
                 _serverManager = new LlamaServerManager(Config, executablePath);
                 _serverManager.OutputReceived += (s, log) => AddServerLog(log);
                 _serverManager.ErrorReceived += (s, log) => AddServerLog(log);

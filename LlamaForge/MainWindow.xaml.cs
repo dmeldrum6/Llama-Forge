@@ -134,7 +134,9 @@ namespace LlamaForge
 
         private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(MainViewModel.IsServerRunning))
+            // Wait for IsServerReady (after health check) instead of IsServerRunning (process start)
+            // This ensures the HTTP server is fully initialized before we try to navigate
+            if (e.PropertyName == nameof(MainViewModel.IsServerReady))
             {
                 UpdateWebViewUrl();
             }
@@ -145,11 +147,12 @@ namespace LlamaForge
             if (ViewModel == null || ChatWebView.CoreWebView2 == null)
                 return;
 
-            if (ViewModel.IsServerRunning)
+            if (ViewModel.IsServerReady)
             {
                 // Navigate to llama.cpp's WebUI served from --path directory
                 // The server automatically serves index.html at the root path
                 string url = $"http://{ViewModel.Host}:{ViewModel.Port}/";
+                System.Diagnostics.Debug.WriteLine($"Server is ready, navigating WebView to: {url}");
                 ChatWebView.CoreWebView2.Navigate(url);
             }
         }

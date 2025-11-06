@@ -48,6 +48,13 @@ namespace LlamaForge.ViewModels
             set { _isServerRunning = value; OnPropertyChanged(); OnPropertyChanged(nameof(CanStartServer)); OnPropertyChanged(nameof(CanStopServer)); }
         }
 
+        private bool _isServerReady;
+        public bool IsServerReady
+        {
+            get => _isServerReady;
+            set { _isServerReady = value; OnPropertyChanged(); }
+        }
+
         private bool _isBusy;
         public bool IsBusy
         {
@@ -429,6 +436,10 @@ namespace LlamaForge.ViewModels
                         StatusMessage = "Server is ready!";
                         AddServerLog("=== Server startup completed successfully ===");
 
+                        // Signal that server is ready for WebUI navigation
+                        IsServerReady = true;
+                        AddServerLog("Server ready - WebUI can now be loaded");
+
                         // Run diagnostics
                         AddServerLog("=== Running Chat Diagnostics ===");
 
@@ -505,6 +516,7 @@ namespace LlamaForge.ViewModels
             _chatClient = null;
             CurrentModelInfo = null;
             IsServerRunning = false;
+            IsServerReady = false;
             StatusMessage = "Server stopped";
         }
 

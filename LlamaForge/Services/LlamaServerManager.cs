@@ -197,6 +197,9 @@ namespace LlamaForge.Services
             // Enable verbose logging to diagnose chat issues
             args += "--verbose ";
 
+            // Enable Jinja template for chat formatting (required for WebUI chat)
+            args += "--jinja ";
+
             // Additional custom arguments
             if (!string.IsNullOrWhiteSpace(_config.AdditionalArgs))
             {

@@ -200,6 +200,12 @@ namespace LlamaForge.Services
             // Enable Jinja template for chat formatting (required for WebUI chat)
             args += "--jinja ";
 
+            // WebUI Path (if provided, serve static files from this directory)
+            if (!string.IsNullOrWhiteSpace(_config.WebUIPath) && Directory.Exists(_config.WebUIPath))
+            {
+                args += $"--path \"{_config.WebUIPath}\" ";
+            }
+
             // Additional custom arguments
             if (!string.IsNullOrWhiteSpace(_config.AdditionalArgs))
             {

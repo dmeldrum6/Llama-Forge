@@ -29,5 +29,8 @@ namespace LlamaForge.Models
 
         // Advanced
         public string AdditionalArgs { get; set; } = string.Empty;
+
+        // WebUI Path (for serving static files)
+        public string WebUIPath { get; set; } = string.Empty;
     }
 }

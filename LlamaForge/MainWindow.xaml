@@ -5,9 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LlamaForge.ViewModels"
         xmlns:controls="clr-namespace:LlamaForge.Controls"
-        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         mc:Ignorable="d"
-        Title="Llama Forge - Local AI Server &amp; Chat" Height="800" Width="1200"
+        Title="Llama Forge - Local AI Server" Height="800" Width="1200"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BackgroundPrimary}">
     <Window.DataContext>
@@ -43,7 +42,7 @@
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="LLAMA FORGE" FontSize="18" FontWeight="Bold"
                                    Foreground="{DynamicResource TextPrimary}" /> <!-- LetterSpacing="2"/> -->
-                        <TextBlock Text="Local AI Server &amp; Chat" FontSize="10"
+                        <TextBlock Text="Local AI Server" FontSize="10"
                                    Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>
@@ -105,52 +104,6 @@
 
         <!-- Main Content -->
         <TabControl Grid.Row="1" Margin="20,10,20,20">
-
-            <!-- Chat Tab -->
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#xE8F2;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"/>
-                        <TextBlock Text="Chat" FontSize="14"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <Grid Margin="0,16,0,0">
-                    <!-- llama.cpp WebUI -->
-                    <wv2:WebView2 x:Name="ChatWebView" />
-
-                    <!-- Message shown when server is not running -->
-                    <Border Background="{DynamicResource BackgroundCard}"
-                            BorderBrush="{DynamicResource BorderPrimary}"
-                            BorderThickness="1"
-                            CornerRadius="8"
-                            Padding="32"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Visibility="{Binding IsServerRunning, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="&#xE7BA;"
-                                       FontFamily="Segoe MDL2 Assets"
-                                       FontSize="64"
-                                       Foreground="{DynamicResource TextTertiary}"
-                                       HorizontalAlignment="Center"
-                                       Margin="0,0,0,16"/>
-                            <TextBlock Text="Server is not running"
-                                       FontSize="18"
-                                       FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextPrimary}"
-                                       HorizontalAlignment="Center"
-                                       Margin="0,0,0,8"/>
-                            <TextBlock Text="Please start the server from the Server tab to use the chat interface"
-                                       FontSize="14"
-                                       Foreground="{DynamicResource TextSecondary}"
-                                       HorizontalAlignment="Center"
-                                       TextWrapping="Wrap"
-                                       TextAlignment="Center"
-                                       MaxWidth="400"/>
-                        </StackPanel>
-                    </Border>
-                </Grid>
-            </TabItem>
 
             <!-- Server Control Tab -->
             <TabItem>
@@ -456,12 +409,20 @@
                                 <TextBlock Text="Start Server" FontSize="14" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
-                        <Button Width="160" Height="48"
+                        <Button Width="160" Height="48" Margin="0,0,16,0"
                                 Command="{Binding StopServerCommand}"
                                 Style="{StaticResource ErrorButton}">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE71A;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
                                 <TextBlock Text="Stop Server" FontSize="14" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Width="180" Height="48"
+                                Command="{Binding OpenBrowserCommand}"
+                                Style="{StaticResource AccentButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE774;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="Launch Chat Client" FontSize="14" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -689,9 +650,9 @@
                                 </Border>
                                 <Border Background="{DynamicResource BackgroundSecondary}" CornerRadius="6" Padding="12" Margin="0,0,0,8">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="&#xE8F2;" FontFamily="Segoe MDL2 Assets" FontSize="16"
+                                        <TextBlock Text="&#xE774;" FontFamily="Segoe MDL2 Assets" FontSize="16"
                                                   Foreground="{DynamicResource AccentPurple}" Margin="0,0,12,0"/>
-                                        <TextBlock Text="Modern chat interface for interacting with AI models"
+                                        <TextBlock Text="OpenAI-compatible API server with web-based chat interface"
                                                   TextWrapping="Wrap" Foreground="{DynamicResource TextPrimary}" LineHeight="22"/>
                                     </StackPanel>
                                 </Border>
@@ -738,7 +699,7 @@
                                           Foreground="{DynamicResource TextPrimary}" FontSize="14"/>
                                 <TextBlock Text="7. Click Start Server" Margin="0,0,0,8"
                                           Foreground="{DynamicResource TextPrimary}" FontSize="14"/>
-                                <TextBlock Text="8. Go to the Chat tab and start chatting!" Margin="0,0,0,0"
+                                <TextBlock Text="8. Click Launch Chat Client to open the web interface in your browser!" Margin="0,0,0,0"
                                           Foreground="{DynamicResource AccentPrimary}" FontSize="14" FontWeight="SemiBold"/>
                             </StackPanel>
                         </GroupBox>
@@ -755,7 +716,7 @@
                             <StackPanel>
                                 <TextBlock TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource TextPrimary}" LineHeight="22">
                                     <Run Text="•" FontWeight="Bold" Foreground="{DynamicResource AccentPrimary}"/>
-                                    <Run Text=" Use Ctrl+Enter to send messages in the chat"/>
+                                    <Run Text=" Click Launch Chat Client to open the web interface in your default browser"/>
                                 </TextBlock>
                                 <TextBlock TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource TextPrimary}" LineHeight="22">
                                     <Run Text="•" FontWeight="Bold" Foreground="{DynamicResource AccentPrimary}"/>

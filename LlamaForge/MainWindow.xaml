@@ -123,11 +123,38 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
+                    <!-- Server Controls -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                        <Button Width="160" Height="48" Margin="0,0,16,0"
+                                Command="{Binding StartServerCommand}"
+                                Style="{StaticResource SuccessButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE768;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="Start Server" FontSize="14" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Width="160" Height="48" Margin="0,0,16,0"
+                                Command="{Binding StopServerCommand}"
+                                Style="{StaticResource ErrorButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE71A;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="Stop Server" FontSize="14" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Width="180" Height="48"
+                                Command="{Binding OpenBrowserCommand}"
+                                Style="{StaticResource AccentButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE774;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="Launch Chat Client" FontSize="14" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
                     <!-- Variant Selection -->
-                    <Expander Grid.Row="0" Margin="0,0,0,16" IsExpanded="True">
+                    <Expander Grid.Row="1" Margin="0,0,0,16" IsExpanded="True">
                         <Expander.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
@@ -155,7 +182,7 @@
                     </Expander>
 
                     <!-- Model Information (shown when server is running) -->
-                    <Expander Grid.Row="1" Margin="0,0,0,16" IsExpanded="True" Visibility="{Binding HasModelInfo, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Expander Grid.Row="2" Margin="0,0,0,16" IsExpanded="True" Visibility="{Binding HasModelInfo, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Expander.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE8F1;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
@@ -202,7 +229,7 @@
                     </Expander>
 
                     <!-- Basic Configuration -->
-                    <Expander Grid.Row="2" Margin="0,0,0,16" IsExpanded="True">
+                    <Expander Grid.Row="3" Margin="0,0,0,16" IsExpanded="True">
                         <Expander.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE115;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
@@ -264,7 +291,7 @@
                     </Expander>
 
                     <!-- Performance Settings -->
-                    <Expander Grid.Row="3" Margin="0,0,0,16" IsExpanded="False">
+                    <Expander Grid.Row="4" Margin="0,0,0,16" IsExpanded="False">
                         <Expander.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
@@ -341,7 +368,7 @@
                     </Expander>
 
                     <!-- Memory Management -->
-                    <Expander Grid.Row="4" Margin="0,0,0,16" IsExpanded="False">
+                    <Expander Grid.Row="5" Margin="0,0,0,16" IsExpanded="False">
                         <Expander.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE7B8;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
@@ -376,7 +403,7 @@
                     </Expander>
 
                     <!-- System Prompt -->
-                    <Expander Grid.Row="5" Margin="0,0,0,16" IsExpanded="True">
+                    <Expander Grid.Row="6" Margin="0,0,0,16" IsExpanded="True">
                         <Expander.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE8F2;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
@@ -399,67 +426,40 @@
                         </Grid>
                     </Expander>
 
-                    <!-- Server Controls -->
-                    <StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0,0,0,16">
-                        <Button Width="160" Height="48" Margin="0,0,16,0"
-                                Command="{Binding StartServerCommand}"
-                                Style="{StaticResource SuccessButton}">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE768;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
-                                <TextBlock Text="Start Server" FontSize="14" FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </Button>
-                        <Button Width="160" Height="48" Margin="0,0,16,0"
-                                Command="{Binding StopServerCommand}"
-                                Style="{StaticResource ErrorButton}">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE71A;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
-                                <TextBlock Text="Stop Server" FontSize="14" FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </Button>
-                        <Button Width="180" Height="48"
-                                Command="{Binding OpenBrowserCommand}"
-                                Style="{StaticResource AccentButton}">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE774;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,10,0"/>
-                                <TextBlock Text="Launch Chat Client" FontSize="14" FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </Button>
-                    </StackPanel>
-
-                    <!-- Server Logs -->
-                    <Expander Grid.Row="7" IsExpanded="True">
-                        <Expander.Header>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"
-                                          Foreground="{DynamicResource AccentCyan}"/>
-                                <TextBlock Text="Server Logs" FontSize="16" FontWeight="SemiBold" Foreground="White"/>
-                            </StackPanel>
-                        </Expander.Header>
-                        <ScrollViewer Margin="16,8,0,0" VerticalScrollBarVisibility="Auto"
-                                     HorizontalScrollBarVisibility="Auto"
-                                     Height="400"
-                                     Padding="0,0,0,16">
-                            <ItemsControl ItemsSource="{Binding ServerLogs}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBox Text="{Binding Mode=OneWay}"
-                                                 FontFamily="Consolas"
-                                                 FontSize="12"
-                                                 Foreground="{DynamicResource TextPrimary}"
-                                                 Background="Transparent"
-                                                 BorderThickness="0"
-                                                 IsReadOnly="True"
-                                                 TextWrapping="NoWrap"
-                                                 Margin="0,2"
-                                                 Cursor="IBeam"/>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-                    </Expander>
                     </Grid>
                 </ScrollViewer>
+            </TabItem>
+
+            <!-- Server Logs Tab -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="Server Logs" FontSize="14"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <Grid Margin="0,16,0,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                 HorizontalScrollBarVisibility="Auto"
+                                 Padding="0,0,16,16">
+                        <ItemsControl ItemsSource="{Binding ServerLogs}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding Mode=OneWay}"
+                                             FontFamily="Consolas"
+                                             FontSize="12"
+                                             Foreground="{DynamicResource TextPrimary}"
+                                             Background="Transparent"
+                                             BorderThickness="0"
+                                             IsReadOnly="True"
+                                             TextWrapping="NoWrap"
+                                             Margin="0,2"
+                                             Cursor="IBeam"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
             </TabItem>
 
             <!-- Download Tab -->

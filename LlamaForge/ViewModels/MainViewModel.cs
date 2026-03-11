@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -19,6 +20,7 @@ namespace LlamaForge.ViewModels
         private readonly SettingsService _settingsService;
         private LlamaServerManager? _serverManager;
         private LlamaChatClient? _chatClient;
+        private CancellationTokenSource? _downloadCts;
 
         // Observable Collections
         public ObservableCollection<ChatMessage> ChatMessages { get; } = new();
@@ -223,6 +225,34 @@ namespace LlamaForge.ViewModels
             set { _systemPrompt = value; OnPropertyChanged(); Config.SystemPrompt = value; SaveSettings(); }
         }
 
+        private double _temperature = 0.7;
+        public double Temperature
+        {
+            get => _temperature;
+            set { _temperature = value; OnPropertyChanged(); Config.Temperature = value; SaveSettings(); }
+        }
+
+        private int _maxTokens = 2048;
+        public int MaxTokens
+        {
+            get => _maxTokens;
+            set { _maxTokens = value; OnPropertyChanged(); Config.MaxTokens = value; SaveSettings(); }
+        }
+
+        private int _maxChatHistoryMessages = 20;
+        public int MaxChatHistoryMessages
+        {
+            get => _maxChatHistoryMessages;
+            set { _maxChatHistoryMessages = value; OnPropertyChanged(); Config.MaxChatHistoryMessages = value; SaveSettings(); }
+        }
+
+        private bool _verboseLogging = false;
+        public bool VerboseLogging
+        {
+            get => _verboseLogging;
+            set { _verboseLogging = value; OnPropertyChanged(); Config.VerboseLogging = value; SaveSettings(); }
+        }
+
         private ModelInfo? _currentModelInfo;
         public ModelInfo? CurrentModelInfo
         {
@@ -259,6 +289,7 @@ namespace LlamaForge.ViewModels
         public ICommand ToggleThemeCommand { get; }
         public ICommand AutoDetectThreadsCommand { get; }
         public ICommand OpenBrowserCommand { get; }
+        public ICommand CancelDownloadCommand { get; }
 
         public MainViewModel()
         {
@@ -331,6 +362,7 @@ namespace LlamaForge.ViewModels
                 ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
                 AutoDetectThreadsCommand = new RelayCommand(_ => AutoDetectThreads());
                 OpenBrowserCommand = new RelayCommand(_ => OpenBrowser(), _ => CanOpenBrowser);
+                CancelDownloadCommand = new RelayCommand(_ => CancelDownload(), _ => IsDownloading);
 
                 Console.WriteLine("Commands initialized");
                 System.Diagnostics.Debug.WriteLine("Commands initialized");
@@ -379,6 +411,18 @@ namespace LlamaForge.ViewModels
                 }
 
                 AddServerLog("Executable file exists, proceeding with server startup");
+
+                // Validate configuration before starting
+                var validationErrors = Config.Validate().ToList();
+                if (validationErrors.Count > 0)
+                {
+                    var errorList = string.Join("\n", validationErrors.Select(e => $"  • {e}"));
+                    StatusMessage = "Configuration validation failed.";
+                    AddServerLog($"ERROR: Invalid configuration:\n{errorList}");
+                    MessageBox.Show($"Please fix the following configuration errors before starting:\n\n{errorList}",
+                        "Configuration Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
 
                 IsBusy = true;
                 StatusMessage = "Starting server...";
@@ -431,16 +475,30 @@ namespace LlamaForge.ViewModels
                 if (success)
                 {
                     AddServerLog($"Creating LlamaChatClient for {Host}:{Port}");
+
+                    // Dispose any previous client before creating a new one
+                    _chatClient?.Dispose();
                     _chatClient = new LlamaChatClient(Host, Port);
                     _chatClient.ResponseChunkReceived += OnResponseChunkReceived;
-                    _chatClient.ErrorOccurred += (s, error) => AddServerLog($"Chat Error: {error}");
+                    _chatClient.ErrorOccurred += (s, error) => AddServerLog($"[Chat Error] {error}");
+                    _chatClient.LogReceived += (s, msg) => AddServerLog($"[Chat] {msg}");
 
-                    // Wait for server to be ready
-                    AddServerLog("Waiting 3 seconds for server to initialize...");
-                    await Task.Delay(3000);
-
-                    AddServerLog("Performing health check...");
-                    var isHealthy = await _chatClient.CheckHealthAsync();
+                    // Poll health endpoint instead of blindly waiting a fixed amount of time.
+                    // The server may be ready in under a second on fast hardware, or need
+                    // more than 3 seconds when loading a large model.
+                    AddServerLog("Polling server health (up to 30 s)...");
+                    var isHealthy = false;
+                    for (int attempt = 1; attempt <= 30; attempt++)
+                    {
+                        await Task.Delay(1000);
+                        isHealthy = await _chatClient.CheckHealthAsync();
+                        if (isHealthy)
+                        {
+                            AddServerLog($"Health check passed on attempt {attempt}.");
+                            break;
+                        }
+                        AddServerLog($"Health check attempt {attempt}/30 — not ready yet...");
+                    }
                     AddServerLog($"Health check result: {isHealthy}");
 
                     if (isHealthy)
@@ -525,6 +583,7 @@ namespace LlamaForge.ViewModels
         private void StopServer()
         {
             _serverManager?.StopServer();
+            _chatClient?.Dispose();
             _chatClient = null;
             CurrentModelInfo = null;
             IsServerRunning = false;
@@ -567,7 +626,12 @@ namespace LlamaForge.ViewModels
 
             try
             {
-                var response = await _chatClient.SendChatMessageAsync(messages, stream: true);
+                var response = await _chatClient.SendChatMessageAsync(
+                    messages,
+                    stream: true,
+                    temperature: _temperature,
+                    maxTokens: _maxTokens,
+                    maxHistoryMessages: _maxChatHistoryMessages);
                 AddServerLog($"[Chat] Request completed. Response length: {response?.Length ?? 0} characters");
 
                 // If streaming didn't populate the message (no chunks received), check if we got a response
@@ -703,11 +767,17 @@ namespace LlamaForge.ViewModels
             IsDownloading = true;
             IsBusy = true;
 
+            _downloadCts = new CancellationTokenSource();
+            var cancellationToken = _downloadCts.Token;
+
             var successCount = 0;
             var failCount = 0;
 
             foreach (var downloadableVariant in selectedVariants)
             {
+                if (cancellationToken.IsCancellationRequested)
+                    break;
+
                 try
                 {
                     downloadableVariant.IsDownloading = true;
@@ -715,7 +785,8 @@ namespace LlamaForge.ViewModels
                     downloadableVariant.StatusMessage = "Finding download...";
                     StatusMessage = $"Downloading {downloadableVariant.Variant.DisplayName}...";
 
-                    var assets = await _githubService.GetAvailableAssetsForVariantAsync(downloadableVariant.Variant);
+                    var assets = await _githubService.GetAvailableAssetsForVariantAsync(
+                        downloadableVariant.Variant, cancellationToken);
 
                     if (assets.Count == 0)
                     {
@@ -738,7 +809,8 @@ namespace LlamaForge.ViewModels
 
                     _githubService.DownloadProgressChanged += progressHandler;
 
-                    var success = await _githubService.DownloadAndInstallAsync(asset, downloadableVariant.Variant);
+                    var success = await _githubService.DownloadAndInstallAsync(
+                        asset, downloadableVariant.Variant, cancellationToken);
 
                     _githubService.DownloadProgressChanged -= progressHandler;
 
@@ -776,11 +848,28 @@ namespace LlamaForge.ViewModels
             IsDownloading = false;
             IsBusy = false;
 
+            _downloadCts?.Dispose();
+            _downloadCts = null;
+
             // Show summary
-            var message = $"Download complete!\n\nSuccessful: {successCount}\nFailed: {failCount}";
-            StatusMessage = $"Downloads complete: {successCount} succeeded, {failCount} failed";
-            MessageBox.Show(message, "Download Complete", MessageBoxButton.OK,
-                failCount > 0 ? MessageBoxImage.Warning : MessageBoxImage.Information);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                StatusMessage = "Download cancelled.";
+                AddServerLog("Download was cancelled by user.");
+            }
+            else
+            {
+                var message = $"Download complete!\n\nSuccessful: {successCount}\nFailed: {failCount}";
+                StatusMessage = $"Downloads complete: {successCount} succeeded, {failCount} failed";
+                MessageBox.Show(message, "Download Complete", MessageBoxButton.OK,
+                    failCount > 0 ? MessageBoxImage.Warning : MessageBoxImage.Information);
+            }
+        }
+
+        private void CancelDownload()
+        {
+            _downloadCts?.Cancel();
+            AddServerLog("Cancelling download...");
         }
 
         private void UpdateServerExecutablePath()
@@ -917,6 +1006,10 @@ namespace LlamaForge.ViewModels
                     _enableEmbeddings = settings.ServerConfig.EnableEmbeddings;
                     _additionalArgs = settings.ServerConfig.AdditionalArgs;
                     _systemPrompt = settings.ServerConfig.SystemPrompt;
+                    _temperature = settings.ServerConfig.Temperature;
+                    _maxTokens = settings.ServerConfig.MaxTokens;
+                    _maxChatHistoryMessages = settings.ServerConfig.MaxChatHistoryMessages;
+                    _verboseLogging = settings.ServerConfig.VerboseLogging;
 
                     // Update Config object
                     Config.ModelPath = _modelPath;
@@ -937,6 +1030,10 @@ namespace LlamaForge.ViewModels
                     Config.EnableEmbeddings = _enableEmbeddings;
                     Config.AdditionalArgs = _additionalArgs;
                     Config.SystemPrompt = _systemPrompt;
+                    Config.Temperature = _temperature;
+                    Config.MaxTokens = _maxTokens;
+                    Config.MaxChatHistoryMessages = _maxChatHistoryMessages;
+                    Config.VerboseLogging = _verboseLogging;
 
                     // Notify UI of changes
                     OnPropertyChanged(nameof(ModelPath));
@@ -957,6 +1054,10 @@ namespace LlamaForge.ViewModels
                     OnPropertyChanged(nameof(EnableEmbeddings));
                     OnPropertyChanged(nameof(AdditionalArgs));
                     OnPropertyChanged(nameof(SystemPrompt));
+                    OnPropertyChanged(nameof(Temperature));
+                    OnPropertyChanged(nameof(MaxTokens));
+                    OnPropertyChanged(nameof(MaxChatHistoryMessages));
+                    OnPropertyChanged(nameof(VerboseLogging));
                 }
 
                 // Load selected variant
@@ -1004,7 +1105,11 @@ namespace LlamaForge.ViewModels
                         Timeout = _timeout,
                         EnableEmbeddings = _enableEmbeddings,
                         AdditionalArgs = _additionalArgs,
-                        SystemPrompt = _systemPrompt
+                        SystemPrompt = _systemPrompt,
+                        Temperature = _temperature,
+                        MaxTokens = _maxTokens,
+                        MaxChatHistoryMessages = _maxChatHistoryMessages,
+                        VerboseLogging = _verboseLogging
                     },
                     SelectedVariantType = _selectedVariant?.Type
                 };

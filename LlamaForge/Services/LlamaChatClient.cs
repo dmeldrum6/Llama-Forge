@@ -250,6 +250,10 @@ namespace LlamaForge.Services
 
                 LogReceived?.Invoke(this, $"Stream complete. Response length: {fullResponse.Length} chars");
             }
+            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+            {
+                ErrorOccurred?.Invoke(this, "Request timed out. The model may be too large or slow to respond.");
+            }
             catch (OperationCanceledException)
             {
                 // Propagate so callers can distinguish cancellation from error
@@ -258,10 +262,6 @@ namespace LlamaForge.Services
             catch (HttpRequestException ex)
             {
                 ErrorOccurred?.Invoke(this, $"HTTP request error: {ex.Message}. Is the server running at {_baseUrl}?");
-            }
-            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
-            {
-                ErrorOccurred?.Invoke(this, "Request timed out. The model may be too large or slow to respond.");
             }
             catch (Exception ex)
             {
@@ -289,6 +289,11 @@ namespace LlamaForge.Services
 
                 return completion?.Choices?[0]?.Message?.Content ?? string.Empty;
             }
+            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+            {
+                ErrorOccurred?.Invoke(this, "Request timed out. The model may be too large or slow to respond.");
+                return string.Empty;
+            }
             catch (OperationCanceledException)
             {
                 throw;
@@ -296,11 +301,6 @@ namespace LlamaForge.Services
             catch (HttpRequestException ex)
             {
                 ErrorOccurred?.Invoke(this, $"HTTP request error: {ex.Message}. Is the server running at {_baseUrl}?");
-                return string.Empty;
-            }
-            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
-            {
-                ErrorOccurred?.Invoke(this, "Request timed out. The model may be too large or slow to respond.");
                 return string.Empty;
             }
             catch (Exception ex)

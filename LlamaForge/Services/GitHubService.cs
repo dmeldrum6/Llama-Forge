@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using LlamaForge.Models;
 using Newtonsoft.Json;
@@ -41,7 +42,6 @@ namespace LlamaForge.Services
                 if (!Directory.Exists(_installPath))
                     return;
 
-                // Find all directories ending with _old_* pattern
                 var oldDirectories = Directory.GetDirectories(_installPath, "*_old_*");
 
                 foreach (var oldDir in oldDirectories)
@@ -52,49 +52,33 @@ namespace LlamaForge.Services
                     }
                     catch
                     {
-                        // Ignore - the directory might still be in use
-                        // Will try again on next startup
+                        // Ignore - the directory might still be in use; retry on next startup
                     }
                 }
             }
             catch
             {
-                // Ignore cleanup errors - this is a best-effort operation
+                // Best-effort — ignore cleanup errors
             }
         }
 
-        public async Task<GitHubRelease?> GetLatestReleaseAsync()
+        public async Task<GitHubRelease?> GetLatestReleaseAsync(CancellationToken cancellationToken = default)
         {
             try
             {
                 StatusChanged?.Invoke(this, "Checking for latest release...");
                 var url = $"{GitHubApiUrl}/repos/{LlamaCppRepo}/releases/latest";
-                var response = await _httpClient.GetStringAsync(url);
-                var release = JsonConvert.DeserializeObject<dynamic>(response);
+                var json = await _httpClient.GetStringAsync(url, cancellationToken);
+                var release = JsonConvert.DeserializeObject<GitHubRelease>(json);
 
-                if (release == null) return null;
+                if (release != null)
+                    StatusChanged?.Invoke(this, $"Found release: {release.TagName}");
 
-                var result = new GitHubRelease
-                {
-                    TagName = release.tag_name,
-                    Name = release.name,
-                    PublishedAt = release.published_at,
-                    Body = release.body ?? string.Empty,
-                    Assets = new List<GitHubAsset>()
-                };
-
-                foreach (var asset in release.assets)
-                {
-                    result.Assets.Add(new GitHubAsset
-                    {
-                        Name = asset.name,
-                        BrowserDownloadUrl = asset.browser_download_url,
-                        Size = asset.size
-                    });
-                }
-
-                StatusChanged?.Invoke(this, $"Found release: {result.TagName}");
-                return result;
+                return release;
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
             }
             catch (Exception ex)
             {
@@ -103,9 +87,11 @@ namespace LlamaForge.Services
             }
         }
 
-        public async Task<List<GitHubAsset>> GetAvailableAssetsForVariantAsync(LlamaVariant variant)
+        public async Task<List<GitHubAsset>> GetAvailableAssetsForVariantAsync(
+            LlamaVariant variant,
+            CancellationToken cancellationToken = default)
         {
-            var release = await GetLatestReleaseAsync();
+            var release = await GetLatestReleaseAsync(cancellationToken);
             if (release == null) return new List<GitHubAsset>();
 
             var pattern = variant.AssetNamePattern.Replace("*", ".*");
@@ -136,7 +122,7 @@ namespace LlamaForge.Services
                 {
                     try
                     {
-                        process.Kill(true); // Kill entire process tree
+                        process.Kill(entireProcessTree: true);
                         process.WaitForExit(3000);
                     }
                     catch (Exception ex)
@@ -159,7 +145,10 @@ namespace LlamaForge.Services
             }
         }
 
-        public async Task<bool> DownloadAndInstallAsync(GitHubAsset asset, LlamaVariant variant)
+        public async Task<bool> DownloadAndInstallAsync(
+            GitHubAsset asset,
+            LlamaVariant variant,
+            CancellationToken cancellationToken = default)
         {
             try
             {
@@ -172,28 +161,32 @@ namespace LlamaForge.Services
                 var extractPath = Path.Combine(_installPath, variant.Type.ToString());
 
                 // Download the file
-                using (var response = await _httpClient.GetAsync(asset.BrowserDownloadUrl, HttpCompletionOption.ResponseHeadersRead))
+                using (var response = await _httpClient.GetAsync(
+                    asset.BrowserDownloadUrl,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    cancellationToken))
                 {
                     response.EnsureSuccessStatusCode();
                     var totalBytes = response.Content.Headers.ContentLength ?? 0;
                     var downloadedBytes = 0L;
 
-                    using (var contentStream = await response.Content.ReadAsStreamAsync())
-                    using (var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+                    using var contentStream = await response.Content.ReadAsStreamAsync();
+                    using var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+
+                    var buffer = new byte[8192];
+                    int bytesRead;
+
+                    while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
                     {
-                        var buffer = new byte[8192];
-                        int bytesRead;
+                        await fileStream.WriteAsync(buffer, 0, bytesRead, cancellationToken);
+                        downloadedBytes += bytesRead;
 
-                        while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                        {
-                            await fileStream.WriteAsync(buffer, 0, bytesRead);
-                            downloadedBytes += bytesRead;
-
-                            var progress = totalBytes > 0 ? (int)((downloadedBytes * 100) / totalBytes) : 0;
-                            DownloadProgressChanged?.Invoke(this, new DownloadProgressEventArgs(progress, downloadedBytes, totalBytes));
-                        }
+                        var progress = totalBytes > 0 ? (int)((downloadedBytes * 100) / totalBytes) : 0;
+                        DownloadProgressChanged?.Invoke(this, new DownloadProgressEventArgs(progress, downloadedBytes, totalBytes));
                     }
                 }
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 StatusChanged?.Invoke(this, $"Extracting {asset.Name}...");
 
@@ -203,21 +196,16 @@ namespace LlamaForge.Services
 
                 try
                 {
-                    StatusChanged?.Invoke(this, "Extracting files...");
                     ZipFile.ExtractToDirectory(zipPath, tempExtractPath);
 
-                    // Now try to replace the old installation
+                    // Try to replace the old installation
                     if (Directory.Exists(extractPath))
                     {
                         StatusChanged?.Invoke(this, "Moving old installation...");
 
-                        // Rename the old directory instead of deleting it
-                        // This allows the installation to succeed even if files are locked
                         var oldPath = Path.Combine(_installPath, $"{variant.Type}_old_{DateTime.Now:yyyyMMdd_HHmmss}");
                         var renamed = false;
 
-                        // Try to rename the directory with exponential backoff
-                        // CUDA files especially may need more time for handles to be released
                         const int maxAttempts = 5;
                         for (int i = 0; i < maxAttempts; i++)
                         {
@@ -228,50 +216,38 @@ namespace LlamaForge.Services
                                 StatusChanged?.Invoke(this, "Old installation moved successfully.");
                                 break;
                             }
-                            catch (UnauthorizedAccessException) when (i < maxAttempts - 1)
+                            catch (Exception) when (i < maxAttempts - 1)
                             {
-                                var delay = (int)Math.Pow(2, i) * 1000; // Exponential backoff: 1s, 2s, 4s, 8s
+                                var delay = (int)Math.Pow(2, i) * 1000;
                                 StatusChanged?.Invoke(this, $"Retrying to move old files (attempt {i + 2}/{maxAttempts})...");
-                                await Task.Delay(delay);
-                            }
-                            catch (IOException) when (i < maxAttempts - 1)
-                            {
-                                var delay = (int)Math.Pow(2, i) * 1000; // Exponential backoff: 1s, 2s, 4s, 8s
-                                StatusChanged?.Invoke(this, $"Retrying to move old files (attempt {i + 2}/{maxAttempts})...");
-                                await Task.Delay(delay);
+                                await Task.Delay(delay, cancellationToken);
                             }
                         }
 
                         if (!renamed)
                         {
-                            // Clean up temp directory
                             Directory.Delete(tempExtractPath, true);
-                            throw new Exception($"Cannot move old installation at:\n{extractPath}\n\nThe files appear to be locked. Possible solutions:\n1. Restart the application and try again\n2. Manually delete the folder: {extractPath}\n3. Restart your computer if the issue persists\n\nNote: CUDA files may remain locked by Windows even after processes terminate.");
+                            throw new IOException(
+                                $"Cannot move old installation at:\n{extractPath}\n\n" +
+                                "The files appear to be locked. Possible solutions:\n" +
+                                "1. Restart the application and try again\n" +
+                                $"2. Manually delete the folder: {extractPath}\n" +
+                                "3. Restart your computer if the issue persists");
                         }
 
-                        // Try to delete the old directory in the background, but don't fail if it's locked
-                        // It will be cleaned up on next app startup
-                        Task.Run(async () =>
+                        // Try to delete the old directory in the background
+                        _ = Task.Run(async () =>
                         {
-                            await Task.Delay(2000); // Wait a bit for file handles to be released
-                            try
-                            {
-                                Directory.Delete(oldPath, true);
-                            }
-                            catch
-                            {
-                                // Ignore - will be cleaned up on next startup
-                            }
+                            await Task.Delay(2000);
+                            try { Directory.Delete(oldPath, true); } catch { }
                         });
                     }
 
-                    // Move the temp directory to the final location
                     StatusChanged?.Invoke(this, "Finalizing installation...");
                     Directory.Move(tempExtractPath, extractPath);
                 }
                 catch
                 {
-                    // Clean up temp directory if something went wrong
                     if (Directory.Exists(tempExtractPath))
                     {
                         try { Directory.Delete(tempExtractPath, true); } catch { }
@@ -288,6 +264,11 @@ namespace LlamaForge.Services
 
                 StatusChanged?.Invoke(this, "Installation completed successfully!");
                 return true;
+            }
+            catch (OperationCanceledException)
+            {
+                StatusChanged?.Invoke(this, "Download cancelled.");
+                return false;
             }
             catch (Exception ex)
             {
@@ -314,13 +295,9 @@ namespace LlamaForge.Services
         {
             var extractPath = Path.Combine(_installPath, variant.Type.ToString());
 
-            // Check if directory exists first
             if (!Directory.Exists(extractPath))
-            {
                 return Path.Combine(extractPath, "bin", "llama-server.exe");
-            }
 
-            // Look for llama-server.exe in the extracted directory and subdirectories
             var serverExe = Directory.GetFiles(extractPath, "llama-server.exe", SearchOption.AllDirectories)
                 .FirstOrDefault();
 
@@ -334,12 +311,11 @@ namespace LlamaForge.Services
             return serverExe ?? Path.Combine(extractPath, "bin", "llama-server.exe");
         }
 
-        public async Task<string> EnsureWebUIFilesAsync()
+        public async Task<string> EnsureWebUIFilesAsync(CancellationToken cancellationToken = default)
         {
             var webUIPath = Path.Combine(_installPath, "webui");
             var indexHtmlPath = Path.Combine(webUIPath, "index.html");
 
-            // Check if WebUI files already exist
             if (File.Exists(indexHtmlPath))
             {
                 StatusChanged?.Invoke(this, "WebUI files already present.");
@@ -352,43 +328,40 @@ namespace LlamaForge.Services
 
                 StatusChanged?.Invoke(this, "Downloading WebUI files from llama.cpp repository...");
 
-                // Download the pre-built index.html.gz from llama.cpp repository
                 const string webUIRawUrl = "https://raw.githubusercontent.com/ggml-org/llama.cpp/master/tools/server/public/index.html.gz";
                 var gzipContent = await _httpClient.GetByteArrayAsync(webUIRawUrl);
 
-                // Decompress the gzip file
-                using (var compressedStream = new MemoryStream(gzipContent))
-                using (var gzipStream = new System.IO.Compression.GZipStream(compressedStream, System.IO.Compression.CompressionMode.Decompress))
-                using (var decompressedStream = new MemoryStream())
-                {
-                    await gzipStream.CopyToAsync(decompressedStream);
-                    var htmlContent = System.Text.Encoding.UTF8.GetString(decompressedStream.ToArray());
+                using var compressedStream = new MemoryStream(gzipContent);
+                using var gzipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
+                using var decompressedStream = new MemoryStream();
 
-                    // Save the decompressed index.html file
-                    await File.WriteAllTextAsync(indexHtmlPath, htmlContent);
-                }
+                await gzipStream.CopyToAsync(decompressedStream, cancellationToken);
+                var htmlContent = System.Text.Encoding.UTF8.GetString(decompressedStream.ToArray());
+                await File.WriteAllTextAsync(indexHtmlPath, htmlContent, cancellationToken);
 
-                // Also download loading.html for fallback
                 try
                 {
                     const string loadingHtmlUrl = "https://raw.githubusercontent.com/ggml-org/llama.cpp/master/tools/server/public/loading.html";
                     var loadingContent = await _httpClient.GetStringAsync(loadingHtmlUrl);
-                    await File.WriteAllTextAsync(Path.Combine(webUIPath, "loading.html"), loadingContent);
+                    await File.WriteAllTextAsync(Path.Combine(webUIPath, "loading.html"), loadingContent, cancellationToken);
                 }
                 catch
                 {
-                    // Loading.html is optional, ignore if it fails
+                    // loading.html is optional
                 }
 
                 StatusChanged?.Invoke(this, "WebUI files downloaded successfully.");
                 return webUIPath;
             }
+            catch (OperationCanceledException)
+            {
+                StatusChanged?.Invoke(this, "WebUI download cancelled.");
+                return string.Empty;
+            }
             catch (Exception ex)
             {
                 StatusChanged?.Invoke(this, $"Warning: Could not download WebUI files: {ex.Message}");
                 StatusChanged?.Invoke(this, "The Chat tab may not work without WebUI files.");
-
-                // Return empty string to indicate failure
                 return string.Empty;
             }
         }

@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using System.Text.Json;
 using LlamaForge.Models;
+using Newtonsoft.Json;
 
 namespace LlamaForge.Services
 {
@@ -27,13 +27,12 @@ namespace LlamaForge.Services
                 if (File.Exists(_settingsPath))
                 {
                     var json = File.ReadAllText(_settingsPath);
-                    var settings = JsonSerializer.Deserialize<AppSettings>(json);
+                    var settings = JsonConvert.DeserializeObject<AppSettings>(json);
                     return settings ?? new AppSettings();
                 }
             }
             catch (Exception ex)
             {
-                // If we can't load settings, just return defaults
                 System.Diagnostics.Debug.WriteLine($"Error loading settings: {ex.Message}");
             }
 
@@ -44,12 +43,7 @@ namespace LlamaForge.Services
         {
             try
             {
-                var options = new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                };
-
-                var json = JsonSerializer.Serialize(settings, options);
+                var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
                 File.WriteAllText(_settingsPath, json);
             }
             catch (Exception ex)

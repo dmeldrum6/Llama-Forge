@@ -1,16 +1,18 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using LlamaForge.Models;
 
 namespace LlamaForge.Services
 {
-    public class LlamaServerManager
+    public class LlamaServerManager : IDisposable
     {
         private Process? _serverProcess;
         private readonly ServerConfig _config;
         private readonly string _executablePath;
+        private bool _disposed;
 
         public event EventHandler<string>? OutputReceived;
         public event EventHandler<string>? ErrorReceived;
@@ -47,6 +49,7 @@ namespace LlamaForge.Services
             try
             {
                 var arguments = BuildCommandLineArguments();
+                var safeArguments = BuildSafeCommandLineArguments();
 
                 _serverProcess = new Process
                 {
@@ -59,23 +62,20 @@ namespace LlamaForge.Services
                         RedirectStandardError = true,
                         CreateNoWindow = true,
                         WorkingDirectory = Path.GetDirectoryName(_executablePath)
-                    }
+                    },
+                    EnableRaisingEvents = true
                 };
 
                 _serverProcess.OutputDataReceived += (sender, e) =>
                 {
                     if (!string.IsNullOrEmpty(e.Data))
-                    {
                         OutputReceived?.Invoke(this, e.Data);
-                    }
                 };
 
                 _serverProcess.ErrorDataReceived += (sender, e) =>
                 {
                     if (!string.IsNullOrEmpty(e.Data))
-                    {
                         ErrorReceived?.Invoke(this, e.Data);
-                    }
                 };
 
                 _serverProcess.Exited += (sender, e) =>
@@ -83,17 +83,18 @@ namespace LlamaForge.Services
                     ServerStatusChanged?.Invoke(this, false);
                 };
 
-                _serverProcess.EnableRaisingEvents = true;
                 _serverProcess.Start();
                 _serverProcess.BeginOutputReadLine();
                 _serverProcess.BeginErrorReadLine();
 
                 ServerStatusChanged?.Invoke(this, true);
                 OutputReceived?.Invoke(this, $"Server started with PID: {_serverProcess.Id}");
-                OutputReceived?.Invoke(this, $"Command: {_executablePath} {arguments}");
+                // Log sanitized command (no API key value)
+                OutputReceived?.Invoke(this, $"Command: {_executablePath} {safeArguments}");
 
-                // Wait a bit to see if it starts successfully
-                await Task.Delay(2000);
+                // Brief pause to detect immediate crashes (e.g. missing model file, port already in use).
+                // The caller is responsible for polling health to confirm the server is actually ready.
+                await Task.Delay(500);
 
                 if (_serverProcess.HasExited)
                 {
@@ -122,13 +123,11 @@ namespace LlamaForge.Services
             {
                 OutputReceived?.Invoke(this, "Stopping server...");
 
-                _serverProcess.Kill(true); // Kill entire process tree
+                _serverProcess.Kill(entireProcessTree: true);
                 _serverProcess.WaitForExit(5000);
 
                 if (!_serverProcess.HasExited)
-                {
-                    _serverProcess.Kill(); // Force kill if still running
-                }
+                    _serverProcess.Kill();
 
                 _serverProcess.Dispose();
                 _serverProcess = null;
@@ -144,79 +143,83 @@ namespace LlamaForge.Services
 
         private string BuildCommandLineArguments()
         {
+            var args = new StringBuilder();
+            AppendCoreArguments(args, redactApiKey: false);
+            return args.ToString().Trim();
+        }
+
+        /// <summary>Builds a version of the command line with the API key value replaced by
+        /// a placeholder, safe for logging.</summary>
+        private string BuildSafeCommandLineArguments()
+        {
+            var args = new StringBuilder();
+            AppendCoreArguments(args, redactApiKey: true);
+            return args.ToString().Trim();
+        }
+
+        private void AppendCoreArguments(StringBuilder args, bool redactApiKey)
+        {
             // Basic Configuration
-            var args = $"-m \"{_config.ModelPath}\" ";
-            args += $"--host {_config.Host} ";
-            args += $"--port {_config.Port} ";
-            args += $"-c {_config.ContextSize} ";
+            args.Append($"-m \"{_config.ModelPath}\" ");
+            args.Append($"--host {_config.Host} ");
+            args.Append($"--port {_config.Port} ");
+            args.Append($"-c {_config.ContextSize} ");
 
             // Performance Settings
-            args += $"-t {_config.Threads} ";
-            args += $"-b {_config.BatchSize} ";
-            args += $"-tb {_config.BatchThreads} ";
-            args += $"-np {_config.ParallelSlots} ";
+            args.Append($"-t {_config.Threads} ");
+            args.Append($"-b {_config.BatchSize} ");
+            args.Append($"-tb {_config.BatchThreads} ");
+            args.Append($"-np {_config.ParallelSlots} ");
 
             if (_config.ContinuousBatching)
-            {
-                args += "-cb ";
-            }
+                args.Append("-cb ");
 
             // Always pass -ngl to ensure GPU layers setting is respected
-            // -ngl 0 = CPU only, -ngl N = offload N layers to GPU
-            args += $"-ngl {_config.GpuLayers} ";
+            args.Append($"-ngl {_config.GpuLayers} ");
 
             // Memory Management
             if (_config.MemoryLock)
-            {
-                args += "--mlock ";
-            }
+                args.Append("--mlock ");
 
             if (_config.DisableMemoryMapping)
-            {
-                args += "--no-mmap ";
-            }
+                args.Append("--no-mmap ");
 
             // Server Features
             if (!string.IsNullOrWhiteSpace(_config.ModelAlias))
-            {
-                args += $"-a \"{_config.ModelAlias}\" ";
-            }
+                args.Append($"-a \"{_config.ModelAlias}\" ");
 
             if (!string.IsNullOrWhiteSpace(_config.ApiKey))
             {
-                args += $"--api-key \"{_config.ApiKey}\" ";
+                if (redactApiKey)
+                    args.Append("--api-key <redacted> ");
+                else
+                    args.Append($"--api-key \"{_config.ApiKey}\" ");
             }
 
-            args += $"-to {_config.Timeout} ";
+            args.Append($"-to {_config.Timeout} ");
 
             if (_config.EnableEmbeddings)
-            {
-                args += "--embedding ";
-            }
+                args.Append("--embedding ");
 
-            // Enable verbose logging to diagnose chat issues
-            args += "--verbose ";
+            if (_config.VerboseLogging)
+                args.Append("--verbose ");
 
             // Enable Jinja template for chat formatting (required for WebUI chat)
-            args += "--jinja ";
+            args.Append("--jinja ");
 
             // WebUI Path (if provided, serve static files from this directory)
             if (!string.IsNullOrWhiteSpace(_config.WebUIPath) && Directory.Exists(_config.WebUIPath))
-            {
-                args += $"--path \"{_config.WebUIPath}\" ";
-            }
+                args.Append($"--path \"{_config.WebUIPath}\" ");
 
             // Additional custom arguments
             if (!string.IsNullOrWhiteSpace(_config.AdditionalArgs))
-            {
-                args += _config.AdditionalArgs;
-            }
-
-            return args.Trim();
+                args.Append(_config.AdditionalArgs);
         }
 
         public void Dispose()
         {
+            if (_disposed) return;
+            _disposed = true;
             StopServer();
         }
     }

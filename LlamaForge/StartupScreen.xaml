@@ -175,8 +175,8 @@
                                 <TextBlock TextWrapping="Wrap"
                                           Foreground="{DynamicResource TextSecondary}"
                                           Margin="40,0,0,0">
-                                    Switch to the <Bold>Chat</Bold> tab and start interacting with your local LLM.
-                                    Type your messages and enjoy private, offline AI conversations!
+                                    Once the model has loaded, click <Bold>Launch Chat Client</Bold> in the Server tab.
+                                    This opens llama.cpp's built-in web chat interface in your default browser — enjoy private, offline AI conversations!
                                 </TextBlock>
                             </StackPanel>
                         </Border>

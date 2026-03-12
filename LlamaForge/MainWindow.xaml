@@ -442,22 +442,19 @@
                     <ScrollViewer VerticalScrollBarVisibility="Auto"
                                  HorizontalScrollBarVisibility="Auto"
                                  Padding="0,0,16,16">
-                        <ItemsControl ItemsSource="{Binding ServerLogs}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBox Text="{Binding Mode=OneWay}"
-                                             FontFamily="Consolas"
-                                             FontSize="12"
-                                             Foreground="{DynamicResource TextPrimary}"
-                                             Background="Transparent"
-                                             BorderThickness="0"
-                                             IsReadOnly="True"
-                                             TextWrapping="NoWrap"
-                                             Margin="0,2"
-                                             Cursor="IBeam"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <TextBox Text="{Binding ServerLogsText, Mode=OneWay}"
+                                 FontFamily="Consolas"
+                                 FontSize="12"
+                                 Foreground="{DynamicResource TextPrimary}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 IsReadOnly="True"
+                                 TextWrapping="NoWrap"
+                                 AcceptsReturn="True"
+                                 VerticalScrollBarVisibility="Disabled"
+                                 HorizontalScrollBarVisibility="Disabled"
+                                 Padding="0,2"
+                                 Cursor="IBeam"/>
                     </ScrollViewer>
                 </Grid>
             </TabItem>

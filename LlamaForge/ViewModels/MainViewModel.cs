@@ -25,6 +25,15 @@ namespace LlamaForge.ViewModels
         // Observable Collections
         public ObservableCollection<ChatMessage> ChatMessages { get; } = new();
         public ObservableCollection<string> ServerLogs { get; } = new();
+
+        // Concatenated log text for single-TextBox display (allows full cross-entry selection)
+        private readonly System.Text.StringBuilder _serverLogsBuilder = new();
+        private string _serverLogsText = string.Empty;
+        public string ServerLogsText
+        {
+            get => _serverLogsText;
+            private set { _serverLogsText = value; OnPropertyChanged(); }
+        }
         public ObservableCollection<LlamaVariant> AvailableVariants { get; } = new();
         public ObservableCollection<DownloadableVariant> DownloadableVariants { get; } = new();
 
@@ -485,19 +494,36 @@ namespace LlamaForge.ViewModels
 
                     // Poll health endpoint instead of blindly waiting a fixed amount of time.
                     // The server may be ready in under a second on fast hardware, or need
-                    // more than 3 seconds when loading a large model.
-                    AddServerLog("Polling server health (up to 30 s)...");
+                    // well over a minute when loading a large model from disk.
+                    const int maxAttempts = 120; // 120 s total
+                    AddServerLog($"Polling server health (up to {maxAttempts} s)...");
+                    AddServerLog("  HTTP 200 = ready  |  HTTP 503 = still loading  |  connection error = not listening yet");
                     var isHealthy = false;
-                    for (int attempt = 1; attempt <= 30; attempt++)
+                    for (int attempt = 1; attempt <= maxAttempts; attempt++)
                     {
                         await Task.Delay(1000);
+
+                        // Abort early if the process has already exited — no point continuing.
+                        if (_serverManager != null && !_serverManager.IsRunning)
+                        {
+                            AddServerLog("ERROR: Server process exited unexpectedly — aborting health check.");
+                            break;
+                        }
+
                         isHealthy = await _chatClient.CheckHealthAsync();
                         if (isHealthy)
                         {
-                            AddServerLog($"Health check passed on attempt {attempt}.");
+                            AddServerLog($"Health check passed on attempt {attempt}/{maxAttempts}.");
                             break;
                         }
-                        AddServerLog($"Health check attempt {attempt}/30 — not ready yet...");
+
+                        // Log every attempt for the first 10, then every 10 attempts to reduce noise.
+                        // Always include the raw HTTP/connection status so the cause is visible.
+                        if (attempt <= 10 || attempt % 10 == 0)
+                        {
+                            var status = await _chatClient.GetHealthStatusAsync();
+                            AddServerLog($"Health check attempt {attempt}/{maxAttempts} — {status}");
+                        }
                     }
                     AddServerLog($"Health check result: {isHealthy}");
 
@@ -893,30 +919,36 @@ namespace LlamaForge.ViewModels
             {
                 if (Application.Current?.Dispatcher != null)
                 {
+                    void UpdateLogs()
+                    {
+                        ServerLogs.Add(logEntry);
+
+                        // Keep only last 1000 logs; rebuild text buffer when trimming.
+                        if (ServerLogs.Count > 1000)
+                        {
+                            while (ServerLogs.Count > 1000)
+                                ServerLogs.RemoveAt(0);
+                            _serverLogsBuilder.Clear();
+                            foreach (var entry in ServerLogs)
+                                _serverLogsBuilder.AppendLine(entry);
+                        }
+                        else
+                        {
+                            _serverLogsBuilder.AppendLine(logEntry);
+                        }
+
+                        ServerLogsText = _serverLogsBuilder.ToString();
+                    }
+
                     if (Application.Current.Dispatcher.CheckAccess())
                     {
                         // Already on UI thread
-                        ServerLogs.Add(logEntry);
-
-                        // Keep only last 1000 logs
-                        while (ServerLogs.Count > 1000)
-                        {
-                            ServerLogs.RemoveAt(0);
-                        }
+                        UpdateLogs();
                     }
                     else
                     {
                         // Need to invoke on UI thread
-                        Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            ServerLogs.Add(logEntry);
-
-                            // Keep only last 1000 logs
-                            while (ServerLogs.Count > 1000)
-                            {
-                                ServerLogs.RemoveAt(0);
-                            }
-                        });
+                        Application.Current.Dispatcher.Invoke(UpdateLogs);
                     }
                 }
                 else

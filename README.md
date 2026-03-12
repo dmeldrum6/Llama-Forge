@@ -5,25 +5,40 @@ A comprehensive WPF (Windows Presentation Foundation) wrapper for [llama.cpp](ht
 ## Features
 
 - **Multi-Variant Support**: Download and manage multiple llama.cpp variants:
-  - CPU (AVX2)
+  - CPU (AVX/AVX2/AVX-512)
   - CUDA (NVIDIA GPU)
-  - ROCm (AMD GPU)
-  - Vulkan
+  - Vulkan (cross-platform GPU)
+  - HIP/ROCm (AMD GPU)
   - SYCL (Intel GPU)
 
 - **Server Management**:
   - Start/stop local llama.cpp server instances
   - Real-time server logs and monitoring
-  - Configurable server parameters (threads, context size, GPU layers, etc.)
+  - Loading indicator while the model initializes
+  - Comprehensive configurable server parameters (see [Server Parameters](#server-parameters))
 
 - **Chat Interface**:
   - Clean, modern chat UI for interacting with models
   - Streaming responses
-  - Conversation history
+  - Configurable conversation history
+  - Syntax-highlighted code blocks (via AvalonEdit) supporting C#, C++, Python, JavaScript, TypeScript, Java, SQL, HTML, CSS, PowerShell, Bash, and more
+  - Configurable system prompt
+
+- **WebUI Integration**:
+  - Automatically downloads llama.cpp's built-in WebUI
+  - Open the WebUI directly in your browser with one click
+
+- **Theme Support**:
+  - Toggle between dark and light themes at any time
+
+- **Settings Persistence**:
+  - All server configuration and preferences are saved automatically
+  - Option to suppress the startup welcome screen
 
 - **Automatic Updates**:
-  - Check for latest llama.cpp releases from GitHub
+  - Check for the latest llama.cpp releases from GitHub
   - One-click download and installation
+  - Download progress display with cancel support
   - Version tracking for installed variants
 
 ## Prerequisites
@@ -36,7 +51,7 @@ A comprehensive WPF (Windows Presentation Foundation) wrapper for [llama.cpp](ht
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/Llama-Forge.git
+git clone https://github.com/dmeldrum6/Llama-Forge.git
 cd Llama-Forge
 ```
 
@@ -53,91 +68,117 @@ dotnet run
 
 ## Quick Start Guide
 
+On first launch, a welcome screen walks you through the five setup steps. You can disable it via the "Don't show this screen again" checkbox.
+
 ### 1. Download llama.cpp
 
 1. Launch Llama Forge
 2. Navigate to the **Download / Update** tab
 3. Select your preferred variant:
-   - Choose **CUDA** if you have an NVIDIA GPU
-   - Choose **CPU** for CPU-only execution
-   - Choose **ROCm** for AMD GPUs
-   - Choose **Vulkan** for cross-platform GPU support
-4. Click **Check for Updates** to see the latest version
+   - **CUDA** — NVIDIA GPU (recommended if you have an NVIDIA card)
+   - **Vulkan** — Cross-platform GPU acceleration
+   - **HIP/ROCm** — AMD GPU
+   - **SYCL** — Intel GPU
+   - **CPU** — CPU-only execution
+4. Click **Check for Updates** to see the latest available version
 5. Click **Download Selected** to download and install
 
 ### 2. Get a Model
 
 Download a GGUF model file. Some popular options:
 
-- [Llama 3.2 models](https://huggingface.co/models?search=llama-3.2-gguf)
+- [Llama 3 models](https://huggingface.co/models?search=llama-3-gguf)
 - [Mistral models](https://huggingface.co/models?search=mistral-gguf)
 - [Phi models](https://huggingface.co/models?search=phi-gguf)
 
-Recommended for testing: Small models like `Phi-3-mini-4k-instruct-q4.gguf` or `Llama-3.2-1B-Instruct-Q4_K_M.gguf`
+Recommended for testing: small models like `Phi-3-mini-4k-instruct-q4.gguf` or `Llama-3.2-1B-Instruct-Q4_K_M.gguf`.
 
-### 3. Configure and Start Server
+### 3. Configure and Start the Server
 
 1. Navigate to the **Server** tab
-2. Click **Browse...** and select your GGUF model file
-3. Configure server settings:
-   - **Host**: Keep as `127.0.0.1` for local access
-   - **Port**: Default `8080` (change if needed)
-   - **Context Size**: `2048` is a good starting point
-   - **Threads**: Set to your CPU core count
-   - **GPU Layers**:
-     - Set to `0` for CPU-only
-     - Set to `32` or higher to offload layers to GPU (requires CUDA/ROCm/Vulkan variant)
-4. Click **Start Server**
-5. Wait for the server to start (watch the logs)
+2. Select the llama.cpp variant you downloaded
+3. Click **Browse...** and select your GGUF model file
+4. Adjust settings as needed (see [Server Parameters](#server-parameters) below)
+5. Click **Start Server**
+6. A loading indicator will appear while the model initializes — wait for it to complete
 
 ### 4. Start Chatting
 
 1. Navigate to the **Chat** tab
-2. Type your message in the text box
+2. Type your message in the input box
 3. Press **Ctrl+Enter** or click **Send**
-4. Watch the response stream in real-time!
+4. Responses stream in real-time with syntax-highlighted code blocks
+
+Alternatively, click **Open in Browser** in the header to use llama.cpp's built-in WebUI.
 
 ## Configuration
 
 ### Server Parameters
 
-- **Model Path**: Path to your GGUF model file
-- **Host**: Server host address (default: 127.0.0.1)
-- **Port**: Server port (default: 8080)
-- **Context Size**: Maximum context length in tokens (larger = more memory)
-- **Threads**: Number of CPU threads to use
-- **GPU Layers**: Number of model layers to offload to GPU (0 = CPU only)
-- **Additional Args**: Any additional llama.cpp command-line arguments
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| Model Path | _(empty)_ | Path to your GGUF model file |
+| Host | `127.0.0.1` | Server listen address |
+| Port | `8080` | Server port (1–65535) |
+| Context Size | `2048` | Maximum context length in tokens |
+| Threads | `4` | CPU threads for prompt processing |
+| Batch Size | `512` | Prompt processing batch size |
+| Batch Threads | `4` | Threads used for batching |
+| Parallel Slots | `1` | Number of parallel request slots |
+| Continuous Batching | `false` | Enable continuous batching |
+| GPU Layers | `0` | Model layers to offload to GPU (0 = CPU only) |
+| Memory Lock | `false` | Lock model in RAM to prevent swapping |
+| Disable Memory Mapping | `false` | Disable mmap for model loading |
+| Model Alias | _(empty)_ | Alias name reported by the API |
+| API Key | _(empty)_ | Optional API key for server access |
+| Timeout | `600` | Request timeout in seconds |
+| Enable Embeddings | `false` | Expose the embeddings endpoint |
+| System Prompt | `You are a helpful assistant` | Default system prompt for chat |
+| Temperature | `0.7` | Sampling temperature (0.0–2.0) |
+| Max Tokens | `2048` | Maximum tokens per response |
+| Max Chat History | `20` | Number of past messages sent as context |
+| Verbose Logging | `false` | Enable detailed server log output |
+| Additional Args | _(empty)_ | Extra llama.cpp command-line arguments |
 
 ### GPU Acceleration
 
-To use GPU acceleration:
+1. Download the variant that matches your GPU (CUDA → NVIDIA, HIP/ROCm → AMD, Vulkan → any modern GPU, SYCL → Intel)
+2. Set **GPU Layers** to a value greater than `0`
+   - Start with `32` and increase until you run out of VRAM
+   - More layers = faster inference but higher VRAM usage
+3. Ensure the appropriate drivers are installed for your GPU
 
-1. Download the appropriate variant (CUDA for NVIDIA, ROCm for AMD, etc.)
-2. Set **GPU Layers** to a value greater than 0
-   - Start with 32 and adjust based on your GPU memory
-   - More layers = faster inference but requires more VRAM
+### Auto-Detect Threads
+
+Click **Auto-Detect** next to the Threads field to automatically set the value to your logical CPU core count.
 
 ## Project Structure
 
 ```
 LlamaForge/
-├── Models/              # Data models
-│   ├── ChatMessage.cs
-│   ├── ServerConfig.cs
-│   ├── LlamaVariant.cs
-│   └── GitHubRelease.cs
-├── Services/            # Core services
-│   ├── GitHubService.cs        # GitHub API integration
-│   ├── LlamaServerManager.cs   # Server process management
-│   └── LlamaChatClient.cs      # Chat API client
-├── ViewModels/          # MVVM view models
-│   └── MainViewModel.cs
-├── Views/               # UI views (currently empty, using MainWindow)
+├── Controls/            # Custom UI controls
+│   └── MessageContentControl.xaml  # Markdown/code rendering for chat messages
 ├── Helpers/             # Utility classes
-│   └── InverseBooleanConverter.cs
-├── MainWindow.xaml      # Main application window
-├── App.xaml            # Application entry point
+│   ├── InverseBooleanConverter.cs
+│   └── InverseBooleanToVisibilityConverter.cs
+├── Models/              # Data models
+│   ├── AppSettings.cs          # Persisted application settings
+│   ├── ChatMessage.cs          # Chat message representation
+│   ├── DownloadableVariant.cs  # Downloadable release asset info
+│   ├── GitHubRelease.cs        # GitHub API release model
+│   ├── LlamaVariant.cs         # Variant type definitions
+│   ├── ModelInfo.cs            # Model metadata from llama.cpp API
+│   └── ServerConfig.cs         # Full server configuration
+├── Services/            # Core services
+│   ├── GitHubService.cs        # GitHub API integration & binary management
+│   ├── LlamaChatClient.cs      # Chat API client (streaming)
+│   ├── LlamaServerManager.cs   # Server process lifecycle management
+│   └── SettingsService.cs      # Load/save settings from disk
+├── ViewModels/          # MVVM view models
+│   └── MainViewModel.cs        # Central application state and commands
+├── App.xaml            # Application entry point & startup screen logic
+├── MainWindow.xaml     # Main application window
+├── StartupScreen.xaml  # First-run welcome/onboarding screen
 └── LlamaForge.csproj   # Project file
 ```
 
@@ -145,103 +186,107 @@ LlamaForge/
 
 Llama Forge follows the MVVM (Model-View-ViewModel) pattern:
 
-- **Models**: Define data structures for chat messages, server configuration, etc.
-- **Services**: Handle business logic (GitHub API, server management, chat client)
-- **ViewModels**: Bridge between views and services, handle UI state and commands
-- **Views**: XAML-based UI components
+- **Models**: Data structures for chat messages, server configuration, settings, and model metadata
+- **Services**: Business logic — GitHub API calls, server process management, chat streaming, settings persistence
+- **ViewModels**: Bridges views and services; manages all UI state and commands
+- **Controls**: Custom WPF controls (e.g., `MessageContentControl` for rendering chat messages with syntax-highlighted code blocks)
+
+## Storage
+
+- Settings: `%LocalAppData%\LlamaForge\settings.json`
+- Downloaded llama.cpp variants: `%LocalAppData%\LlamaForge\llama-cpp\<variant>\`
+- WebUI files: stored alongside the llama.cpp variant binaries
 
 ## Troubleshooting
 
 ### Server won't start
 
-1. Check that the model file path is correct
-2. Verify the selected variant is downloaded (check Download tab)
-3. Look at Server Logs for error messages
-4. Ensure the port is not already in use
+1. Verify the correct variant is downloaded (check the **Download / Update** tab)
+2. Confirm the model file path is valid
+3. Check **Server Logs** for specific error messages
+4. Ensure the configured port is not already in use
+
+### Model loads but chat is unavailable
+
+- A loading indicator appears after the server process starts; wait for it to disappear before sending messages
+- If it takes unusually long, check Server Logs for errors during model loading
 
 ### GPU not being used
 
-1. Verify you downloaded the correct variant (CUDA/ROCm/Vulkan)
-2. Check that **GPU Layers** is set to a value > 0
-3. Ensure you have the appropriate GPU drivers installed
-4. Check server logs for GPU detection messages
+1. Confirm you downloaded the correct variant (CUDA/HIP/Vulkan/SYCL)
+2. Set **GPU Layers** to a value greater than `0`
+3. Verify GPU drivers are installed and up to date
+4. Review Server Logs for GPU detection messages
 
 ### Download fails
 
 1. Check your internet connection
-2. Verify GitHub is accessible
+2. Verify that GitHub is reachable
 3. Try a different variant
-4. Check the server logs for detailed error messages
+4. Use the **Cancel** button and retry
 
-### Chat responses are slow
+### Slow chat responses
 
 1. Increase **GPU Layers** if you have a GPU
-2. Try a smaller/quantized model
+2. Use a smaller or more quantized model (e.g., Q4 instead of Q8)
 3. Reduce **Context Size**
-4. Increase **Threads** (but not beyond your CPU core count)
+4. Click **Auto-Detect** to optimize your thread count
 
 ## Technical Details
 
 ### Dependencies
 
-- **Newtonsoft.Json**: JSON serialization/deserialization
-- **CommunityToolkit.Mvvm**: MVVM helpers and commands
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `Newtonsoft.Json` | 13.0.3 | JSON serialization |
+| `CommunityToolkit.Mvvm` | 8.2.2 | MVVM helpers and relay commands |
+| `AvalonEdit` | 6.3.0.90 | Syntax-highlighted code blocks in chat |
 
 ### llama.cpp Integration
 
 Llama Forge integrates with llama.cpp through:
 
-1. **Process Management**: Spawns llama-server.exe as a child process
-2. **HTTP API**: Communicates via llama.cpp's HTTP API endpoints:
-   - `/v1/chat/completions`: OpenAI-compatible chat endpoint
-   - `/completion`: Raw completion endpoint
-   - `/health`: Server health check
-
-### Storage
-
-- Downloaded llama.cpp variants: `%LocalAppData%\LlamaForge\llama-cpp\`
-- Each variant is stored in its own subdirectory
-- Version tracking via `version.txt` file in each variant directory
+1. **Process Management**: Spawns `llama-server.exe` as a managed child process
+2. **HTTP API**: Communicates via llama.cpp's HTTP API:
+   - `GET /health` — Server health check and model load status
+   - `POST /v1/chat/completions` — OpenAI-compatible streaming chat endpoint
+   - `GET /v1/models` — Retrieve loaded model information
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
+Contributions are welcome! Feel free to open issues for bugs or feature requests, or submit pull requests.
 
 ## Roadmap
 
 Phase 1 (Current):
-- [x] Basic WPF UI
-- [x] Server management
-- [x] Chat interface
-- [x] Multi-variant support
-- [x] Automatic updates
+- [x] WPF UI with dark/light theme support
+- [x] Server management with real-time logs
+- [x] Chat interface with syntax-highlighted code blocks
+- [x] Multi-variant support (CPU, CUDA, Vulkan, ROCm, SYCL)
+- [x] Automatic llama.cpp updates with progress and cancel
+- [x] Settings persistence
+- [x] Startup welcome screen
+- [x] WebUI integration with browser launch
+- [x] Loading indicator during model initialization
+- [x] Model metadata display (architecture, parameter count, etc.)
+- [x] Configurable system prompt, temperature, and chat history
 
 Phase 2 (Future):
-- [ ] Model download manager
-- [ ] Preset configurations
-- [ ] Multiple server instances
-- [ ] Advanced chat features (system prompts, temperature control)
+- [ ] Model download manager (download GGUF files from within the app)
+- [ ] Preset server configurations
+- [ ] Multiple simultaneous server instances
 - [ ] Model quantization tools
-- [ ] Settings persistence
-- [ ] Themes support
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
-- [llama.cpp](https://github.com/ggerganov/llama.cpp) - The amazing C++ implementation of LLaMA
-- [Georgi Gerganov](https://github.com/ggerganov) - Creator of llama.cpp
+- [llama.cpp](https://github.com/ggerganov/llama.cpp) — The C++ LLM inference engine powering this app
+- [Georgi Gerganov](https://github.com/ggerganov) — Creator of llama.cpp
 - The open-source AI community
-
-## Support
-
-For issues, questions, or suggestions:
-- Open an issue on GitHub
-- Check existing issues for solutions
-- Review the troubleshooting section above
 
 ---
 
-**Note**: This is a wrapper application. All AI inference is performed by llama.cpp. Model quality and performance depend on the underlying llama.cpp implementation and the models you use.
+**Note**: Llama Forge is a GUI wrapper. All AI inference is performed by llama.cpp. Model quality and performance depend on the underlying llama.cpp implementation and the models you use.

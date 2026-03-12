@@ -80,6 +80,13 @@ namespace LlamaForge.ViewModels
             set { _isBusy = value; OnPropertyChanged(); OnPropertyChanged(nameof(CanSendMessage)); }
         }
 
+        private bool _isModelLoading;
+        public bool IsModelLoading
+        {
+            get => _isModelLoading;
+            set { _isModelLoading = value; OnPropertyChanged(); }
+        }
+
         private int _downloadProgress;
         public int DownloadProgress
         {
@@ -498,6 +505,8 @@ namespace LlamaForge.ViewModels
                     const int maxAttempts = 120; // 120 s total
                     AddServerLog($"Polling server health (up to {maxAttempts} s)...");
                     AddServerLog("  HTTP 200 = ready  |  HTTP 503 = still loading  |  connection error = not listening yet");
+                    IsModelLoading = true;
+                    StatusMessage = "Server starting...";
                     var isHealthy = false;
                     for (int attempt = 1; attempt <= maxAttempts; attempt++)
                     {
@@ -517,6 +526,11 @@ namespace LlamaForge.ViewModels
                             break;
                         }
 
+                        // Update status message so the user can see loading progress.
+                        StatusMessage = attempt <= 3
+                            ? "Server starting..."
+                            : $"Loading model... ({attempt}s)";
+
                         // Log every attempt for the first 10, then every 10 attempts to reduce noise.
                         // Always include the raw HTTP/connection status so the cause is visible.
                         if (attempt <= 10 || attempt % 10 == 0)
@@ -526,6 +540,8 @@ namespace LlamaForge.ViewModels
                         }
                     }
                     AddServerLog($"Health check result: {isHealthy}");
+
+                    IsModelLoading = false;
 
                     if (isHealthy)
                     {
@@ -603,6 +619,7 @@ namespace LlamaForge.ViewModels
             finally
             {
                 IsBusy = false;
+                IsModelLoading = false;
             }
         }
 
@@ -614,6 +631,7 @@ namespace LlamaForge.ViewModels
             CurrentModelInfo = null;
             IsServerRunning = false;
             IsServerReady = false;
+            IsModelLoading = false;
             StatusMessage = "Server stopped";
         }
 

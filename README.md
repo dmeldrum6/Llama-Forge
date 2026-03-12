@@ -19,16 +19,10 @@ A comprehensive WPF (Windows Presentation Foundation) wrapper for [llama.cpp](ht
   - Loading indicator while the model initializes
   - Comprehensive configurable server parameters (see [Server Parameters](#server-parameters))
 
-- **Chat Interface**:
-  - Clean, modern chat UI for interacting with models
-  - Streaming responses
-  - Configurable conversation history
-  - Syntax-highlighted code blocks (via AvalonEdit) supporting C#, C++, Python, JavaScript, TypeScript, Java, SQL, HTML, CSS, PowerShell, Bash, and more
-  - Configurable system prompt
-
-- **WebUI Integration**:
+- **Web-Based Chat**:
   - Automatically downloads llama.cpp's built-in WebUI
-  - Open the WebUI directly in your browser with one click
+  - **Launch Chat Client** button opens the chat interface in your default browser once the server is ready
+  - Full-featured web chat with streaming responses, conversation history, and model settings
 
 - **Theme Support**:
   - Toggle between dark and light themes at any time
@@ -106,12 +100,7 @@ Recommended for testing: small models like `Phi-3-mini-4k-instruct-q4.gguf` or `
 
 ### 4. Start Chatting
 
-1. Navigate to the **Chat** tab
-2. Type your message in the input box
-3. Press **Ctrl+Enter** or click **Send**
-4. Responses stream in real-time with syntax-highlighted code blocks
-
-Alternatively, click **Open in Browser** in the header to use llama.cpp's built-in WebUI.
+Once the model finishes loading, the **Launch Chat Client** button in the Server tab becomes active. Click it to open llama.cpp's built-in web chat interface in your default browser.
 
 ## Configuration
 
@@ -159,7 +148,7 @@ Click **Auto-Detect** next to the Threads field to automatically set the value t
 ```
 LlamaForge/
 ├── Controls/            # Custom UI controls
-│   └── MessageContentControl.xaml  # Markdown/code rendering for chat messages
+│   └── MessageContentControl.xaml  # Content rendering control (text and syntax-highlighted code blocks)
 ├── Helpers/             # Utility classes
 │   ├── InverseBooleanConverter.cs
 │   └── InverseBooleanToVisibilityConverter.cs
@@ -191,7 +180,7 @@ Llama Forge follows the MVVM (Model-View-ViewModel) pattern:
 - **Models**: Data structures for chat messages, server configuration, settings, and model metadata
 - **Services**: Business logic — GitHub API calls, server process management, chat streaming, settings persistence
 - **ViewModels**: Bridges views and services; manages all UI state and commands
-- **Controls**: Custom WPF controls (e.g., `MessageContentControl` for rendering chat messages with syntax-highlighted code blocks)
+- **Controls**: Custom WPF controls (e.g., `MessageContentControl` for rendering text with syntax-highlighted code blocks)
 
 ## Storage
 
@@ -208,10 +197,10 @@ Llama Forge follows the MVVM (Model-View-ViewModel) pattern:
 3. Check **Server Logs** for specific error messages
 4. Ensure the configured port is not already in use
 
-### Model loads but chat is unavailable
+### Launch Chat Client button is greyed out
 
-- A loading indicator appears after the server process starts; wait for it to disappear before sending messages
-- If it takes unusually long, check Server Logs for errors during model loading
+- A loading indicator appears after the server process starts; wait for it to complete before the button becomes active
+- If it takes unusually long, check the **Server Logs** tab for errors during model loading
 
 ### GPU not being used
 
@@ -242,7 +231,7 @@ Llama Forge follows the MVVM (Model-View-ViewModel) pattern:
 |---------|---------|---------|
 | `Newtonsoft.Json` | 13.0.3 | JSON serialization |
 | `CommunityToolkit.Mvvm` | 8.2.2 | MVVM helpers and relay commands |
-| `AvalonEdit` | 6.3.0.90 | Syntax-highlighted code blocks in chat |
+| `AvalonEdit` | 6.3.0.90 | Syntax-highlighted code block rendering |
 
 ### llama.cpp Integration
 
@@ -263,7 +252,7 @@ Contributions are welcome! Feel free to open issues for bugs or feature requests
 Phase 1 (Current):
 - [x] WPF UI with dark/light theme support
 - [x] Server management with real-time logs
-- [x] Chat interface with syntax-highlighted code blocks
+- [x] Web-based chat via llama.cpp's built-in WebUI (launched from the app)
 - [x] Multi-variant support (CPU, CUDA, Vulkan, ROCm, SYCL)
 - [x] Automatic llama.cpp updates with progress and cancel
 - [x] Settings persistence

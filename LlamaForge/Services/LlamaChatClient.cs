@@ -54,6 +54,35 @@ namespace LlamaForge.Services
             }
         }
 
+        /// <summary>
+        /// Returns a human-readable health status string for diagnostic logging.
+        /// Distinguishes between "loading model" (HTTP 503), "ready" (HTTP 200),
+        /// connection refused (process not listening), and other errors.
+        /// </summary>
+        public async Task<string> GetHealthStatusAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(TimeSpan.FromSeconds(5));
+                var response = await _httpClient.GetAsync($"{_baseUrl}/health", cts.Token);
+                var body = (await response.Content.ReadAsStringAsync()).Trim();
+                return $"HTTP {(int)response.StatusCode} — {body}";
+            }
+            catch (OperationCanceledException)
+            {
+                return "timed out waiting for response";
+            }
+            catch (HttpRequestException ex)
+            {
+                return $"connection error ({ex.Message})";
+            }
+            catch (Exception ex)
+            {
+                return $"error: {ex.Message}";
+            }
+        }
+
         public async Task<string> GetModelInfoAsync(CancellationToken cancellationToken = default)
         {
             try

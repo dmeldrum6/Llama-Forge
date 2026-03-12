@@ -47,12 +47,46 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Status Message -->
-                <TextBlock Grid.Column="1" Text="{Binding StatusMessage}"
-                          Foreground="{DynamicResource TextSecondary}"
-                          VerticalAlignment="Center"
-                          Margin="40,0,0,0"
-                          FontSize="13"/>
+                <!-- Status Message with spinning loading indicator -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal"
+                            VerticalAlignment="Center" Margin="40,0,0,0">
+                    <!-- Spinner: visible and animating only while IsModelLoading is true -->
+                    <Border Width="18" Height="18" Margin="0,0,8,0"
+                            RenderTransformOrigin="0.5,0.5">
+                        <Border.RenderTransform>
+                            <RotateTransform/>
+                        </Border.RenderTransform>
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsModelLoading}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard x:Name="spinStoryboard">
+                                                <Storyboard RepeatBehavior="Forever">
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                        From="0" To="360" Duration="0:0:1.2"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <StopStoryboard BeginStoryboardName="spinStoryboard"/>
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock Text="&#xE895;" FontFamily="Segoe MDL2 Assets" FontSize="14"
+                                   Foreground="{DynamicResource AccentPrimary}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="{Binding StatusMessage}"
+                               Foreground="{DynamicResource TextSecondary}"
+                               VerticalAlignment="Center"
+                               FontSize="13"/>
+                </StackPanel>
 
                 <!-- Theme Toggle Button -->
                 <Button Grid.Column="2" Width="40" Height="40" Margin="0,0,12,0"

@@ -2,6 +2,8 @@
 
 A comprehensive WPF (Windows Presentation Foundation) wrapper for [llama.cpp](https://github.com/ggerganov/llama.cpp), providing an intuitive graphical interface for managing and interacting with local large language models.
 
+<img width="1184" height="793" alt="image" src="https://github.com/user-attachments/assets/839f03c0-1edf-4d92-af56-78a76734232f" />
+
 ## Features
 
 - **Multi-Variant Support**: Download and manage multiple llama.cpp variants:

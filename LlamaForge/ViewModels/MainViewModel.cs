@@ -70,7 +70,16 @@ namespace LlamaForge.ViewModels
         public bool IsServerReady
         {
             get => _isServerReady;
-            set { _isServerReady = value; OnPropertyChanged(); OnPropertyChanged(nameof(CanOpenBrowser)); }
+            set
+            {
+                _isServerReady = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(CanOpenBrowser));
+                // CommandManager.RequerySuggested only fires on user input, so the button
+                // would stay disabled until the user clicks something. Force a re-query now
+                // so the button enables immediately when the health check passes.
+                Application.Current?.Dispatcher?.BeginInvoke(CommandManager.InvalidateRequerySuggested);
+            }
         }
 
         private bool _isBusy;

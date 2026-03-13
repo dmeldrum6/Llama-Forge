@@ -243,10 +243,6 @@ Llama Forge integrates with llama.cpp through:
    - `POST /v1/chat/completions` — OpenAI-compatible streaming chat endpoint
    - `GET /v1/models` — Retrieve loaded model information
 
-## Contributing
-
-Contributions are welcome! Feel free to open issues for bugs or feature requests, or submit pull requests.
-
 ## Roadmap
 
 Phase 1 (Current):
